@@ -23,3 +23,4 @@ pnpm-debug.log*
 # local agent config
 CLAUDE.md
 .claude/
+AGENTS.md
