@@ -13,4 +13,4 @@ works under the hood.
 
 ## Sections
 
-- [Getting started](/docs/getting-started/) — install Simbi and record your first note.
+- [Getting started](/docs/getting-started/): install Simbi and record your first note.

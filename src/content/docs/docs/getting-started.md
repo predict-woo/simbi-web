@@ -19,4 +19,4 @@ Simbi to your Applications folder.
 
 1. Open Simbi and grant microphone access when prompted.
 2. Create a new note and press record.
-3. Speak — the live transcript appears as you go.
+3. Speak: the live transcript appears as you go.

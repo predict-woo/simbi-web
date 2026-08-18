@@ -1,0 +1,13 @@
+/* Starlight theme overrides: Simbi's olive/lime accent, from the app icon. */
+
+:root {
+	--sl-color-accent-low: #232908;
+	--sl-color-accent: #6f7d2c;
+	--sl-color-accent-high: #cdd98a;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #e8ecc8;
+	--sl-color-accent: #596423;
+	--sl-color-accent-high: #333a12;
+}

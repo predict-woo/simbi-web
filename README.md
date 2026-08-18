@@ -8,10 +8,13 @@ deployed as a static-assets Worker on Cloudflare.
 
 ## Layout
 
-- `src/pages/index.astro` — landing page (`/`)
-- `src/content/docs/docs/*.md` — documentation pages, served at `/docs/*`
-- `astro.config.mjs` — Starlight config (title, sidebar, links)
-- `wrangler.jsonc` — Cloudflare Workers deploy config
+- `src/pages/index.astro`: landing page (`/`)
+- `src/components/`, `src/lib/`, `src/styles/`: landing page building blocks
+  (drafting-frame components, seeded rail generation, design tokens)
+- `src/assets/`: app icon and screenshot used by the landing page
+- `src/content/docs/docs/*.md`: documentation pages, served at `/docs/*`
+- `astro.config.mjs`: Starlight config (title, sidebar, links)
+- `wrangler.jsonc`: Cloudflare Workers deploy config
 
 ## Writing docs
 

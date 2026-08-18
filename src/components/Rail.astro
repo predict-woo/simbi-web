@@ -1,0 +1,49 @@
+---
+/**
+ * A 1px vertical rail made of seeded-random solid/dashed segments, centered
+ * on one edge of its (relatively positioned) parent so rails from adjacent
+ * sections line up into one continuous line.
+ */
+import { railSegments } from '../lib/rails';
+
+interface Props {
+	seed: number;
+	side: 'left' | 'right';
+}
+
+const { seed, side } = Astro.props;
+---
+
+<span class:list={['rail', side]} aria-hidden="true">
+	{
+		railSegments(seed).map((segment) => (
+			<span class:list={['seg', { dashed: segment.dashed }]} style={`flex: ${segment.flex}`} />
+		))
+	}
+</span>
+
+<style>
+	.rail {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		display: flex;
+		flex-direction: column;
+		color: var(--hairline);
+		pointer-events: none;
+	}
+	.rail.right {
+		right: -0.5px;
+	}
+	.rail.left {
+		left: -0.5px;
+	}
+	.seg {
+		width: 1px;
+		background: currentColor;
+	}
+	.seg.dashed {
+		background: repeating-linear-gradient(to bottom, currentColor 0 4px, transparent 4px 8px);
+	}
+</style>
