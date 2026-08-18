@@ -1,14 +1,36 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	// Assets-only Worker: serves the static Astro build from ./dist.
+	// Static Astro site plus the stable download redirect.
 	"name": "simbi-web",
+	"main": "./worker/index.js",
 	"compatibility_date": "2026-08-18",
 	"assets": {
 		"directory": "./dist",
-		"not_found_handling": "404-page"
+		"binding": "ASSETS",
+		"not_found_handling": "404-page",
+		"run_worker_first": ["/api/*"]
 	},
+	"send_email": [
+		{
+			"name": "EMAIL",
+			"allowed_sender_addresses": ["downloads@getsimbi.app"]
+		}
+	],
+	"ratelimits": [
+		{
+			"name": "EMAIL_ADDRESS_RATE_LIMITER",
+			"namespace_id": "26081901",
+			"simple": { "limit": 1, "period": 60 }
+		},
+		{
+			"name": "EMAIL_GLOBAL_RATE_LIMITER",
+			"namespace_id": "26081902",
+			"simple": { "limit": 5, "period": 60 }
+		}
+	],
 	"routes": [
 		{ "pattern": "getsimbi.app", "custom_domain": true },
-		{ "pattern": "www.getsimbi.app", "custom_domain": true }
+		{ "pattern": "www.getsimbi.app", "custom_domain": true },
+		{ "pattern": "download.getsimbi.app", "custom_domain": true }
 	]
 }

@@ -7,13 +7,14 @@ sidebar:
 
 ## Requirements
 
+- Apple silicon Mac
 - macOS 14.0 or later (system-audio capture requires 14.4+)
 
 ## Install
 
-Download the latest release from
-[GitHub Releases](https://github.com/predict-woo/simbi/releases) and drag
-Simbi to your Applications folder.
+Download the latest Apple silicon `.dmg` from
+[download.getsimbi.app/darwin-arm64](https://download.getsimbi.app/darwin-arm64)
+and drag Simbi to your Applications folder.
 
 ## Record your first note
 

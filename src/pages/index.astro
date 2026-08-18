@@ -13,7 +13,8 @@ import Hatch from '../components/Hatch.astro';
 import Mark from '../components/Mark.astro';
 import '../styles/global.css';
 
-const releasesUrl = 'https://github.com/predict-woo/simbi/releases/latest';
+const downloadUrl = 'https://download.getsimbi.app/darwin-arm64';
+const releasesUrl = 'https://github.com/predict-woo/simbi/releases';
 const githubUrl = 'https://github.com/predict-woo/simbi';
 const description =
 	'Simbi is an open-source macOS notetaking app that records your meetings, ' +
@@ -253,7 +254,7 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 						</button>
 						<a
 							id="header-download"
-							href={releasesUrl}
+							href={downloadUrl}
 							class="relative flex size-12 shrink-0 items-center justify-center border-l border-hairline bg-accent text-paper transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-accent"
 							aria-label="Download Simbi for macOS"
 							title="Download"
@@ -379,7 +380,7 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 							</button>
 							<a
 								id="mobile-download"
-								href={releasesUrl}
+								href={downloadUrl}
 								class="relative flex size-12 items-center justify-center border-t border-hairline bg-accent text-paper transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-accent"
 								aria-label="Download Simbi for macOS"
 								title="Download"
@@ -430,30 +431,157 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 					Simbi lives symbiotically with the ChatGPT plan you already have.
 				</p>
 				<div class="mt-6 flex flex-wrap justify-center gap-3">
-					<Button href={releasesUrl} variant="primary" class="hero-download"
-						>Download for macOS</Button
+					<Button href={downloadUrl} variant="primary" class="hero-download download-cta invisible"
+						>Download for Apple silicon</Button
 					>
 					<Button href="/docs/">Read the docs</Button>
 				</div>
-				<script is:inline>
-					(() => {
+				<p class="intel-contributor-note mt-3 max-w-lg text-sm text-muted" hidden>
+					Intel Mac support is not ready yet.
+					<br />
+					We are looking for contributors to help build it.
+					<br />
+					<a href={githubUrl} class="text-accent underline transition-colors hover:text-ink">
+						Help on GitHub
+					</a>.
+				</p>
+				<form id="email-download-form" class="mt-4 w-full max-w-md" hidden>
+					<p class="mb-2 text-sm text-muted">We will send the Mac download link to your inbox.</p>
+					<div class="flex flex-col justify-center gap-2 min-[24rem]:flex-row">
+						<label class="sr-only" for="download-email">Email address</label>
+						<input
+							id="download-email"
+							name="email"
+							type="email"
+							autocomplete="email"
+							inputmode="email"
+							autocapitalize="none"
+							spellcheck="false"
+							placeholder="you@example.com"
+							required
+							class="corner-bevel min-w-0 flex-1 rounded-sm border border-hairline bg-panel px-4 py-2 text-sm outline-none transition-colors placeholder:text-muted focus:border-accent"
+						/>
+						<input name="website" type="text" tabindex="-1" autocomplete="off" class="hidden" />
+						<button
+							type="submit"
+							class="corner-bevel rounded-sm bg-accent px-4 py-2 text-sm font-medium text-paper transition-colors hover:bg-ink disabled:cursor-wait disabled:opacity-60"
+						>
+							Send link
+						</button>
+					</div>
+					<p class="email-download-status mt-2 min-h-5 text-sm text-muted" aria-live="polite"></p>
+				</form>
+				<script>
+					import { detectDownloadPlatform } from '../lib/download-platform.js';
+
+					(async () => {
 						const headerDownload = document.querySelector('#header-download');
 						const mobileDownload = document.querySelector('#mobile-download');
 						const heroDownload = document.querySelector('.hero-download');
+						const downloadCtas = document.querySelectorAll('.download-cta');
+						const intelNote = document.querySelector('.intel-contributor-note');
+						const emailForm = document.querySelector('#email-download-form');
+						const emailInput = emailForm.querySelector('input[name="email"]');
+						const emailStatus = emailForm.querySelector('.email-download-status');
+						const emailSubmit = emailForm.querySelector('button[type="submit"]');
 						const topbar = headerDownload.closest('.sticky');
 						const topbarHeight = topbar.getBoundingClientRect().height;
+						let hasHeaderAction = false;
+						let heroHasScrolled = false;
+
+						const updateHeaderDownload = () => {
+							const visible = hasHeaderAction && heroHasScrolled;
+							headerDownload.toggleAttribute('data-visible', visible);
+							headerDownload.toggleAttribute('inert', !visible);
+							headerDownload.setAttribute('aria-hidden', String(!visible));
+							mobileDownload.hidden = !visible;
+						};
 
 						new IntersectionObserver(
 							([entry]) => {
-								const visible =
+								heroHasScrolled =
 									!entry.isIntersecting && entry.boundingClientRect.top < topbarHeight;
-								headerDownload.toggleAttribute('data-visible', visible);
-								headerDownload.toggleAttribute('inert', !visible);
-								headerDownload.setAttribute('aria-hidden', String(!visible));
-								mobileDownload.hidden = !visible;
+								updateHeaderDownload();
 							},
 							{ rootMargin: `-${topbarHeight}px 0px 0px` },
 						).observe(heroDownload);
+
+						const previewPlatform = new URLSearchParams(location.search).get('download-platform');
+						const platform =
+							import.meta.env.DEV && ['arm', 'intel', 'mac-unknown', 'mobile', 'other'].includes(previewPlatform)
+								? previewPlatform
+								: await detectDownloadPlatform();
+						const canDownload = platform === 'arm' || platform === 'mac-unknown';
+						const canEmailLink = platform === 'mobile';
+						hasHeaderAction = canDownload || canEmailLink;
+						intelNote.hidden = platform !== 'intel' && platform !== 'mac-unknown';
+
+						downloadCtas.forEach((cta) => {
+							if (canDownload) {
+								cta.textContent = 'Download for Apple silicon';
+							} else if (canEmailLink) {
+								cta.textContent = 'Download for Mac';
+								cta.setAttribute('href', '#email-download-form');
+								cta.setAttribute('aria-controls', 'email-download-form');
+							} else {
+								cta.textContent =
+									platform === 'intel' ? 'Intel build not ready' : 'Requires an Apple silicon Mac';
+								cta.removeAttribute('href');
+								cta.setAttribute('aria-disabled', 'true');
+								cta.setAttribute('tabindex', '-1');
+							}
+							cta.classList.remove('invisible');
+						});
+
+						if (hasHeaderAction) {
+							[headerDownload, mobileDownload].forEach((download) => {
+								if (canEmailLink) download.href = '#email-download-form';
+								download.setAttribute(
+									'aria-label',
+									canEmailLink ? 'Email me the Simbi download link' : 'Download Simbi for Apple silicon',
+								);
+								download.title = canEmailLink ? 'Email download link' : 'Download for Apple silicon';
+							});
+						}
+
+						if (canEmailLink) {
+							[...downloadCtas, headerDownload, mobileDownload].forEach((trigger) =>
+								trigger.addEventListener('click', (event) => {
+									event.preventDefault();
+									emailForm.hidden = false;
+									emailForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+									emailInput.focus({ preventScroll: true });
+								}),
+							);
+						}
+
+						emailForm.addEventListener('submit', async (event) => {
+							event.preventDefault();
+							if (!emailForm.reportValidity()) return;
+
+							emailSubmit.disabled = true;
+							emailStatus.textContent = 'Sending...';
+
+							try {
+								const response = await fetch('/api/email-download', {
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json' },
+									body: JSON.stringify({
+										email: emailInput.value,
+										website: emailForm.elements.website.value,
+									}),
+								});
+								const result = await response.json();
+								if (!response.ok) throw new Error(result.error);
+								emailForm.reset();
+								emailStatus.textContent = 'Sent. Check your inbox.';
+							} catch (error) {
+								emailStatus.textContent = error.message || 'Could not send the email. Please try again.';
+							} finally {
+								emailSubmit.disabled = false;
+							}
+						});
+						updateHeaderDownload();
 					})();
 				</script>
 				<figure class="relative z-10 my-8 w-full max-w-5xl md:my-10">
@@ -662,7 +790,9 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 					Zero walls around your notes.
 				</h2>
 				<div class="mt-8 flex flex-wrap justify-center gap-3">
-					<Button href={releasesUrl} variant="primary">Download for macOS</Button>
+					<Button href={downloadUrl} variant="primary" class="download-cta invisible">
+						Download for Apple silicon
+					</Button>
 					<Button href={githubUrl}>View on GitHub</Button>
 				</div>
 			</section>

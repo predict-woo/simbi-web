@@ -107,6 +107,12 @@
 	transition-delay: 0s;
 }
 
+.download-cta[aria-disabled='true'] {
+	background-color: var(--hairline);
+	color: var(--muted);
+	cursor: not-allowed;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	#header-download {
 		transition: none;
