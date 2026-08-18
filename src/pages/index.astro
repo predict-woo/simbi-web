@@ -162,6 +162,9 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 	</head>
 	<body>
 		<div class="sticky top-0 z-50 bg-paper">
+			<hr class="absolute inset-x-0 top-0 z-20 border-hairline sm:hidden" />
+			<Mark class="top-0 left-4 sm:hidden" />
+			<Mark class="top-0 right-4 sm:hidden" />
 			<Frame seed={10} flush>
 				<header class="flex h-12 items-stretch">
 					<a href="/" class="flex items-center gap-2 pl-5 text-lg font-bold sm:pl-8 lg:pl-10">
@@ -175,6 +178,7 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 							aria-label="Documentation"
 							title="Documentation"
 						>
+							<Mark class="top-0 left-0 -mt-px -ml-px sm:hidden" />
 							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
 							<svg
 								class="size-4"
@@ -196,6 +200,7 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 							aria-label="GitHub"
 							title="GitHub"
 						>
+							<Mark class="top-0 left-0 -mt-px -ml-px sm:hidden" />
 							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
 							<svg
 								class="size-4"
@@ -219,6 +224,7 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 							aria-label="Switch to dark mode"
 							aria-pressed="false"
 						>
+							<Mark class="top-0 left-0 -mt-px -ml-px sm:hidden" />
 							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
 							<svg
 								class="theme-icon-moon size-4"
@@ -254,6 +260,7 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 							aria-hidden="true"
 							inert
 						>
+							<Mark class="top-0 left-0 -mt-px -ml-px sm:hidden" />
 							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
 							<span class="absolute inset-0 flex items-center justify-center overflow-hidden">
 								<svg
@@ -275,6 +282,7 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 						<summary
 							class="relative flex size-12 cursor-pointer items-center justify-center border-l border-hairline text-ink transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
 						>
+							<Mark class="top-0 left-0 -mt-px -ml-px" />
 							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
 							<span class="sr-only">Menu</span>
 							<svg
