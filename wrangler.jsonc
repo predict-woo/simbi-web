@@ -1,0 +1,14 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// Assets-only Worker: serves the static Astro build from ./dist.
+	"name": "simbi-web",
+	"compatibility_date": "2026-08-18",
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "404-page"
+	},
+	"routes": [
+		{ "pattern": "getsimbi.app", "custom_domain": true },
+		{ "pattern": "www.getsimbi.app", "custom_domain": true }
+	]
+}

@@ -1,0 +1,151 @@
+---
+// Landing page — served at the site root, separate from the Starlight docs.
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Simbi — notetaking that listens</title>
+		<meta
+			name="description"
+			content="Simbi is an open-source macOS notetaking app that records, diarizes, and transcribes your conversations locally."
+		/>
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+	</head>
+	<body>
+		<main>
+			<header>
+				<span class="wordmark">Simbi</span>
+				<nav>
+					<a href="/docs/">Docs</a>
+					<a href="https://github.com/predict-woo/simbi">GitHub</a>
+				</nav>
+			</header>
+
+			<section class="hero">
+				<h1>Notetaking that listens.</h1>
+				<p>
+					Simbi is an open-source macOS app that records and diarizes audio locally,
+					transcribes as you speak, and keeps your notes and conversations together.
+				</p>
+				<div class="actions">
+					<a class="button primary" href="https://github.com/predict-woo/simbi/releases">
+						Download for macOS
+					</a>
+					<a class="button" href="/docs/">Read the docs</a>
+				</div>
+			</section>
+
+			<footer>
+				<p>Open source, under active development.</p>
+			</footer>
+		</main>
+	</body>
+</html>
+
+<style>
+	:root {
+		--bg: #ffffff;
+		--fg: #17191e;
+		--muted: #5b5f66;
+		--accent: #3245ff;
+		--border: #e6e8eb;
+	}
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--bg: #121316;
+			--fg: #eceef2;
+			--muted: #9ba0a8;
+			--accent: #7f8fff;
+			--border: #24262b;
+		}
+	}
+	* {
+		margin: 0;
+		box-sizing: border-box;
+	}
+	html {
+		font-family:
+			ui-sans-serif,
+			system-ui,
+			-apple-system,
+			sans-serif;
+		background: var(--bg);
+		color: var(--fg);
+	}
+	main {
+		min-height: 100svh;
+		max-width: 42rem;
+		margin: 0 auto;
+		padding: 1.5rem;
+		display: flex;
+		flex-direction: column;
+	}
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+	}
+	.wordmark {
+		font-weight: 700;
+		font-size: 1.125rem;
+	}
+	nav {
+		display: flex;
+		gap: 1.25rem;
+	}
+	nav a {
+		color: var(--muted);
+		text-decoration: none;
+	}
+	nav a:hover {
+		color: var(--fg);
+	}
+	.hero {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 1.25rem;
+		padding: 4rem 0;
+	}
+	h1 {
+		font-size: clamp(2.25rem, 6vw, 3.5rem);
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+	}
+	.hero p {
+		font-size: 1.125rem;
+		line-height: 1.6;
+		color: var(--muted);
+		max-width: 36rem;
+	}
+	.actions {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-top: 0.5rem;
+	}
+	.button {
+		display: inline-block;
+		padding: 0.625rem 1.125rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--border);
+		color: var(--fg);
+		text-decoration: none;
+		font-weight: 500;
+	}
+	.button.primary {
+		background: var(--fg);
+		border-color: var(--fg);
+		color: var(--bg);
+	}
+	footer {
+		padding: 1.5rem 0;
+		border-top: 1px solid var(--border);
+		color: var(--muted);
+		font-size: 0.875rem;
+	}
+</style>
