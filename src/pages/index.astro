@@ -1,7 +1,8 @@
 ---
 // Landing page, served at the site root, separate from the Starlight docs.
-import { Picture } from 'astro:assets';
+import { getImage } from 'astro:assets';
 import appWindow from '../assets/app-window.png';
+import appWindowDark from '../assets/app-window-dark.png';
 import simbiIcon from '../assets/simbi-icon.svg';
 import Button from '../components/Button.astro';
 import CellRow from '../components/CellRow.astro';
@@ -89,6 +90,19 @@ const tree = [
 const featureRows = [features.slice(0, 3), features.slice(3)];
 
 const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10';
+
+const appWindowWidths = [720, 1088, 1600, appWindow.width];
+const appWindowSrcset = async (src: typeof appWindow, format: 'avif' | 'webp') =>
+	(
+		await Promise.all(appWindowWidths.map((width) => getImage({ src, width, format })))
+	)
+		.map((image, index) => `${image.src} ${appWindowWidths[index]}w`)
+		.join(', ');
+const [lightAvif, lightWebp, darkWebp] = await Promise.all([
+	appWindowSrcset(appWindow, 'avif'),
+	appWindowSrcset(appWindow, 'webp'),
+	appWindowSrcset(appWindowDark, 'webp'),
+]);
 ---
 
 <!doctype html>
@@ -96,6 +110,17 @@ const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script is:inline>
+			(() => {
+				let theme;
+				try {
+					const stored = localStorage.getItem('starlight-theme');
+					if (stored === 'light' || stored === 'dark') theme = stored;
+				} catch {}
+				document.documentElement.dataset.theme =
+					theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			})();
+		</script>
 		<title>Simbi, notetaking that listens</title>
 		<meta name="description" content={description} />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -107,23 +132,276 @@ const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10
 		<meta property="og:title" content="Simbi" />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={new URL(appWindow.src, Astro.site)} />
+		<style>
+			.file-tree {
+				container-type: inline-size;
+			}
+
+			.file-tree-path-full,
+			.file-tree-note {
+				display: none;
+			}
+
+			@container (min-width: 33ch) {
+				.file-tree-path-full {
+					display: inline;
+				}
+
+				.file-tree-path-short {
+					display: none;
+				}
+			}
+
+			@container (min-width: 55ch) {
+				.file-tree-note {
+					display: inline;
+				}
+			}
+
+		</style>
 	</head>
 	<body>
-		<Frame seed={10}>
-			<header class="flex items-center justify-between py-3.5">
-				<a href="/" class="flex items-center gap-2 text-lg font-bold">
-					<img src={simbiIcon.src} alt="" width="26" height="26" />
-					<span>Simbi</span>
-				</a>
-				<nav class="flex items-center gap-6">
-					<a href="/docs/" class="text-sm transition-colors hover:text-accent">Docs</a>
-					<a href={githubUrl} class="text-sm transition-colors hover:text-accent">GitHub</a>
-					<Button href={releasesUrl} variant="primary" class="px-4 py-1.5">Download</Button>
-				</nav>
-			</header>
-		</Frame>
-
-		<hr class="border-hairline" />
+		<div class="sticky top-0 z-50 bg-paper">
+			<Frame seed={10} flush>
+				<header class="flex h-12 items-stretch">
+					<a href="/" class="flex items-center gap-2 pl-5 text-lg font-bold sm:pl-8 lg:pl-10">
+						<img src={simbiIcon.src} alt="" width="26" height="26" />
+						<span class="text-accent">Simbi</span>
+					</a>
+					<nav class="ml-auto hidden items-stretch min-[21rem]:flex">
+						<a
+							href="/docs/"
+							class="relative flex size-12 shrink-0 items-center justify-center border-l border-hairline text-accent transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+							aria-label="Documentation"
+							title="Documentation"
+						>
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<svg
+								class="size-4"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+								<path d="M6.5 2H20V22H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"></path>
+							</svg>
+						</a>
+						<a
+							href={githubUrl}
+							class="relative flex size-12 shrink-0 items-center justify-center border-l border-hairline text-accent transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+							aria-label="GitHub"
+							title="GitHub"
+						>
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<svg
+								class="size-4"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M15 22V18A4.8 4.8 0 0 0 14 14.5C17.3 14.1 20.8 12.9 20.8 7.5A5.4 5.4 0 0 0 19.4 4 5 5 0 0 0 19.3.5S18 0 15 2A13.4 13.4 0 0 0 7 2C4 .5 2.7.5 2.7.5A5 5 0 0 0 2.6 4 5.4 5.4 0 0 0 1.2 7.7C1.2 13.1 4.7 14.3 8 14.7A4.8 4.8 0 0 0 7 18V22"></path>
+								<path d="M7 19C4 19.9 4 17.5 3 17"></path>
+							</svg>
+						</a>
+						<button
+							id="theme-toggle"
+							data-theme-toggle
+							type="button"
+							class="relative flex size-12 shrink-0 items-center justify-center border-l border-hairline text-ink transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
+							aria-label="Switch to dark mode"
+							aria-pressed="false"
+						>
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<svg
+								class="theme-icon-moon size-4"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"
+							>
+								<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path>
+							</svg>
+							<svg
+								class="theme-icon-sun size-4"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								aria-hidden="true"
+							>
+								<circle cx="12" cy="12" r="4"></circle>
+								<path d="M12 2V4M12 20V22M4.9 4.9L6.3 6.3M17.7 17.7L19.1 19.1M2 12H4M20 12H22M4.9 19.1L6.3 17.7M17.7 6.3L19.1 4.9"></path>
+							</svg>
+						</button>
+						<a
+							id="header-download"
+							href={releasesUrl}
+							class="relative flex size-12 shrink-0 items-center justify-center border-l border-hairline bg-accent text-paper transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-accent"
+							aria-label="Download Simbi for macOS"
+							title="Download"
+							aria-hidden="true"
+							inert
+						>
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<span class="absolute inset-0 flex items-center justify-center overflow-hidden">
+								<svg
+									class="size-4 shrink-0"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M12 3V15M8 11L12 15L16 11M5 21H19"></path>
+								</svg>
+							</span>
+						</a>
+					</nav>
+					<details class="mobile-menu relative ml-auto min-[21rem]:hidden">
+						<summary
+							class="relative flex size-12 cursor-pointer items-center justify-center border-l border-hairline text-ink transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
+						>
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<span class="sr-only">Menu</span>
+							<svg
+								class="size-5"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								aria-hidden="true"
+							>
+								<path d="M4 6H20M4 12H20M4 18H20"></path>
+							</svg>
+						</summary>
+						<nav
+							class="absolute top-full right-0 z-50 w-12 border border-hairline bg-paper shadow-lg"
+						>
+							<Mark class="top-0 left-0 -mt-px -ml-px" />
+							<a
+								href="/docs/"
+								class="flex size-12 items-center justify-center text-accent transition-colors hover:bg-accent-tint hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+								aria-label="Documentation"
+								title="Documentation"
+							>
+								<svg
+									class="size-4"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+									<path d="M6.5 2H20V22H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"></path>
+								</svg>
+							</a>
+							<a
+								href={githubUrl}
+								class="relative flex size-12 items-center justify-center border-t border-hairline text-accent transition-colors hover:bg-accent-tint hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+								aria-label="GitHub"
+								title="GitHub"
+							>
+								<Mark class="top-0 left-0 -mt-px -ml-px" />
+								<Mark class="top-0 right-0 -mt-px -mr-px" />
+								<svg
+									class="size-4"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M15 22V18A4.8 4.8 0 0 0 14 14.5C17.3 14.1 20.8 12.9 20.8 7.5A5.4 5.4 0 0 0 19.4 4 5 5 0 0 0 19.3.5S18 0 15 2A13.4 13.4 0 0 0 7 2C4 .5 2.7.5 2.7.5A5 5 0 0 0 2.6 4 5.4 5.4 0 0 0 1.2 7.7C1.2 13.1 4.7 14.3 8 14.7A4.8 4.8 0 0 0 7 18V22"></path>
+									<path d="M7 19C4 19.9 4 17.5 3 17"></path>
+								</svg>
+							</a>
+							<button
+								data-theme-toggle
+								type="button"
+								class="relative flex size-12 items-center justify-center border-t border-hairline text-accent transition-colors hover:bg-accent-tint hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+								aria-label="Switch to dark mode"
+								aria-pressed="false"
+							>
+								<Mark class="top-0 left-0 -mt-px -ml-px" />
+								<Mark class="top-0 right-0 -mt-px -mr-px" />
+								<svg
+									class="theme-icon-moon size-4"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path>
+								</svg>
+								<svg
+									class="theme-icon-sun size-4"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									aria-hidden="true"
+								>
+									<circle cx="12" cy="12" r="4"></circle>
+									<path d="M12 2V4M12 20V22M4.9 4.9L6.3 6.3M17.7 17.7L19.1 19.1M2 12H4M20 12H22M4.9 19.1L6.3 17.7M17.7 6.3L19.1 4.9"></path>
+								</svg>
+							</button>
+							<a
+								id="mobile-download"
+								href={releasesUrl}
+								class="relative flex size-12 items-center justify-center border-t border-hairline bg-accent text-paper transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-accent"
+								aria-label="Download Simbi for macOS"
+								title="Download"
+								hidden
+							>
+								<Mark class="top-0 left-0 -mt-px -ml-px" />
+								<Mark class="top-0 right-0 -mt-px -mr-px" />
+								<svg
+									class="size-4"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M12 3V15M8 11L12 15L16 11M5 21H19"></path>
+								</svg>
+							</a>
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<Mark class="right-0 bottom-0 -mr-px -mb-px" />
+						</nav>
+					</details>
+				</header>
+			</Frame>
+			<hr class="border-hairline" />
+			<Mark class="bottom-0 left-4 sm:left-6 md:left-12" />
+			<Mark class="right-4 bottom-0 sm:right-6 md:right-12" />
+		</div>
 
 		<Frame seed={20} marks flush>
 			<div class="relative flex flex-col items-center px-5 pt-10 text-center sm:px-8 md:pt-16 lg:px-10">
@@ -144,18 +422,127 @@ const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10
 					Simbi lives symbiotically with the ChatGPT plan you already have.
 				</p>
 				<div class="mt-6 flex flex-wrap justify-center gap-3">
-					<Button href={releasesUrl} variant="primary">Download for macOS</Button>
+					<Button href={releasesUrl} variant="primary" class="hero-download"
+						>Download for macOS</Button
+					>
 					<Button href="/docs/">Read the docs</Button>
 				</div>
+				<script is:inline>
+					(() => {
+						const headerDownload = document.querySelector('#header-download');
+						const mobileDownload = document.querySelector('#mobile-download');
+						const heroDownload = document.querySelector('.hero-download');
+						const topbar = headerDownload.closest('.sticky');
+						const topbarHeight = topbar.getBoundingClientRect().height;
+
+						new IntersectionObserver(
+							([entry]) => {
+								const visible =
+									!entry.isIntersecting && entry.boundingClientRect.top < topbarHeight;
+								headerDownload.toggleAttribute('data-visible', visible);
+								headerDownload.toggleAttribute('inert', !visible);
+								headerDownload.setAttribute('aria-hidden', String(!visible));
+								mobileDownload.hidden = !visible;
+							},
+							{ rootMargin: `-${topbarHeight}px 0px 0px` },
+						).observe(heroDownload);
+					})();
+				</script>
 				<figure class="relative z-10 my-8 w-full max-w-5xl md:my-10">
-					<Picture
-						src={appWindow}
-						alt="The Simbi app: a note with AI summary, timestamped citations, and a live speaker-labelled transcript beside the recording"
-						formats={['avif', 'webp']}
-						widths={[720, 1088, 1600, appWindow.width]}
-						sizes="(max-width: 1280px) calc(100vw - 2rem), 1152px"
-						loading="eager"
-					/>
+					<picture id="app-window-picture">
+						<source
+							type="image/avif"
+							data-light-srcset={lightAvif}
+							sizes="(max-width: 1280px) calc(100vw - 2rem), 1152px"
+						/>
+						<source
+							type="image/webp"
+							data-light-srcset={lightWebp}
+							data-dark-srcset={darkWebp}
+							sizes="(max-width: 1280px) calc(100vw - 2rem), 1152px"
+						/>
+						<img
+							data-light-src={appWindow.src}
+							data-dark-src={appWindowDark.src}
+							width={appWindow.width}
+							height={appWindow.height}
+							alt="The Simbi app: a note with AI summary, timestamped citations, and a live speaker-labelled transcript beside the recording"
+							loading="eager"
+							decoding="async"
+							fetchpriority="high"
+						/>
+					</picture>
+					<script is:inline>
+						(() => {
+							const root = document.documentElement;
+							const toggles = document.querySelectorAll('[data-theme-toggle]');
+							const picture = document.querySelector('#app-window-picture');
+							const image = picture.querySelector('img');
+
+							const applyTheme = (theme) => {
+								root.dataset.theme = theme;
+								const nextTheme = theme === 'dark' ? 'light' : 'dark';
+								toggles.forEach((toggle) => {
+									toggle.setAttribute('aria-label', `Switch to ${nextTheme} mode`);
+									toggle.setAttribute('aria-pressed', String(theme === 'dark'));
+									toggle.title = `Switch to ${nextTheme} mode`;
+									const label = toggle.querySelector('[data-theme-label]');
+									if (label) {
+										label.textContent = `${nextTheme[0].toUpperCase()}${nextTheme.slice(1)} mode`;
+									}
+								});
+
+								picture.querySelectorAll('source').forEach((source) => {
+									const srcset = source.dataset[`${theme}Srcset`];
+									if (srcset) source.srcset = srcset;
+									else source.removeAttribute('srcset');
+								});
+								image.src = image.dataset[`${theme}Src`];
+							};
+
+							applyTheme(root.dataset.theme);
+							toggles.forEach((toggle) => toggle.addEventListener('click', () => {
+								const theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+								const update = () => {
+									applyTheme(theme);
+									try {
+										localStorage.setItem('starlight-theme', theme);
+									} catch {}
+									return image.decode().catch(() => {});
+								};
+
+								if (
+									!document.startViewTransition ||
+									matchMedia('(prefers-reduced-motion: reduce)').matches
+								) {
+									update();
+									return;
+								}
+
+								const { left, top, width, height } = toggle.getBoundingClientRect();
+								const x = left + width / 2;
+								const y = top + height / 2;
+								const radius = Math.hypot(
+									Math.max(x, innerWidth - x),
+									Math.max(y, innerHeight - y),
+								);
+								const transition = document.startViewTransition(update);
+
+								transition.ready
+									.then(() =>
+										root.animate(
+											{ clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+											{
+												duration: 450,
+												easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+												pseudoElement: '::view-transition-new(root)',
+											},
+										),
+									)
+									.catch(() => {});
+							}));
+						})();
+					</script>
 				</figure>
 			</div>
 		</Frame>
@@ -197,11 +584,11 @@ const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10
 
 		<Frame seed={44} marks flush>
 			<div class="grid md:grid-cols-5">
-				<div class="relative p-6 md:col-span-3 md:p-12">
+				<div class="relative min-w-0 p-6 md:col-span-3 md:p-12">
 					<Hatch />
 					<pre
-						class="relative overflow-x-auto rounded-md border border-accent-bright/40 bg-paper p-6 font-mono text-sm leading-loose"><code>~/Simbi/Work/2026-07-15 Standup/
-{tree.map(([name, note], i) => `${i === tree.length - 1 ? '└─' : '├─'} ${name.padEnd(17)}${note}\n`)}</code></pre>
+						class="file-tree relative overflow-x-auto rounded-md border border-accent-bright/40 bg-paper p-6 font-mono text-sm leading-loose"><code><span class="file-tree-path-full">~/Simbi/Work/2026-07-15 Standup/</span><span class="file-tree-path-short">~/Simbi/Work/Standup/</span>{'\n'}
+{tree.map(([name, note], i) => <>{i === tree.length - 1 ? '└─' : '├─'} <span class="text-accent">{name}</span><span class="file-tree-note">{' '.repeat(17 - name.length)}{note}</span>{'\n'}</>)}</code></pre>
 				</div>
 				<ul
 					class="relative flex flex-col border-t border-hairline md:col-span-2 md:border-t-0 md:border-l"
@@ -217,8 +604,8 @@ const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10
 						<Mark class="top-0 left-0 hidden -mt-px -ml-px md:block" />
 						<Mark class="top-0 right-0 hidden -mt-px md:block" />
 						<span>
-							Drop <code class="font-mono text-xs">audio.webm</code> and{' '}
-							<code class="font-mono text-xs">transcript.vtt</code> into VLC and the recording
+							Drop <code class="font-mono text-xs text-accent">audio.webm</code> and{' '}
+							<code class="font-mono text-xs text-accent">transcript.vtt</code> into VLC and the recording
 							plays with speaker-labelled subtitles in sync.
 						</span>
 					</li>
@@ -276,12 +663,12 @@ const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10
 		<hr class="border-hairline" />
 
 		<Frame seed={80}>
-			<footer class="flex flex-wrap items-center justify-between gap-3 py-6 text-sm">
+			<footer class="flex flex-wrap items-center justify-between gap-3 py-6 text-sm text-muted">
 				<span>MIT licensed · © 2026 Andrew Sangwoo Ye</span>
 				<nav class="flex gap-6">
-					<a href="/docs/" class="transition-colors hover:text-accent">Docs</a>
-					<a href={githubUrl} class="transition-colors hover:text-accent">GitHub</a>
-					<a href={releasesUrl} class="transition-colors hover:text-accent">Releases</a>
+					<a href="/docs/" class="text-accent transition-colors hover:text-ink">Docs</a>
+					<a href={githubUrl} class="text-accent transition-colors hover:text-ink">GitHub</a>
+					<a href={releasesUrl} class="text-accent transition-colors hover:text-ink">Releases</a>
 				</nav>
 			</footer>
 		</Frame>

@@ -14,9 +14,10 @@ const { fade = false } = Astro.props;
 
 <svg
 	class:list={[
-		'pointer-events-none absolute inset-0 size-full text-accent-bright opacity-10 dark:opacity-5',
+		'pointer-events-none absolute inset-0 size-full text-accent-bright',
 		fade && 'mask-t-from-0%',
 	]}
+	style="opacity: var(--graph-opacity)"
 	aria-hidden="true"
 >
 	<defs>

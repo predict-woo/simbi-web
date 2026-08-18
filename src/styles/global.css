@@ -3,31 +3,36 @@
 @import 'tailwindcss';
 
 /*
- * Semantic colors live in plain custom properties so dark mode can swap them
- * with one media query; the theme maps them to utilities (bg-paper, text-ink,
+ * Semantic colors live in plain custom properties so color-scheme can select
+ * the light or dark value; the theme maps them to utilities (bg-paper, text-ink,
  * border-hairline, ...). The accent pair comes from the app icon.
  */
 :root {
-	--paper: #faf9f6;
-	--panel: #ffffff;
-	--ink: #000000;
-	--hairline: #ddded2;
-	--accent: #596423;
+	color-scheme: light dark;
+	--paper: light-dark(#faf9f6, #15170e);
+	--panel: light-dark(#ffffff, #1a1d11);
+	--ink: light-dark(#000000, #f2f3ea);
+	--muted: light-dark(#6b6d64, #aeb39e);
+	--hairline: light-dark(#ddded2, rgb(155 160 135 / 18%));
+	--accent: light-dark(#596423, #b9c63f);
 	--accent-bright: #a5b21c;
-	--accent-tint: rgb(165 178 28 / 7%);
+	--accent-tint: light-dark(rgb(165 178 28 / 7%), rgb(165 178 28 / 6%));
+	--graph-opacity: 10%;
 }
 
-/* Not inverted light mode: lines get more transparent and the page goes deep
-   desaturated green rather than black. */
+:root[data-theme='light'] {
+	color-scheme: light;
+}
+
+/* Not inverted light mode: the page goes deep desaturated green rather than black. */
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--graph-opacity: 5%;
+}
+
 @media (prefers-color-scheme: dark) {
-	:root {
-		--paper: #15170e;
-		--panel: #1a1d11;
-		--ink: #f2f3ea;
-		--hairline: rgb(155 160 135 / 18%);
-		--accent: #b9c63f;
-		--accent-bright: #a5b21c;
-		--accent-tint: rgb(165 178 28 / 6%);
+	:root:not([data-theme]) {
+		--graph-opacity: 5%;
 	}
 }
 
@@ -36,10 +41,29 @@
 	--font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation: none;
+	mix-blend-mode: normal;
+}
+
+.theme-icon-sun {
+	display: none;
+}
+
+:root[data-theme='dark'] .theme-icon-sun {
+	display: block;
+}
+
+:root[data-theme='dark'] .theme-icon-moon {
+	display: none;
+}
+
 @theme inline {
 	--color-paper: var(--paper);
 	--color-panel: var(--panel);
 	--color-ink: var(--ink);
+	--color-muted: var(--muted);
 	--color-hairline: var(--hairline);
 	--color-accent: var(--accent);
 	--color-accent-bright: var(--accent-bright);
@@ -52,6 +76,40 @@
 	}
 	body {
 		@apply bg-paper font-sans text-ink antialiased;
+	}
+}
+
+.mobile-menu > summary {
+	list-style: none;
+}
+
+.mobile-menu > summary::-webkit-details-marker {
+	display: none;
+}
+
+#header-download {
+	max-width: 0;
+	border-left-color: transparent;
+	opacity: 0;
+	visibility: hidden;
+	transition:
+		max-width 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+		opacity 140ms ease,
+		border-color 140ms ease,
+		visibility 0s linear 260ms;
+}
+
+#header-download[data-visible] {
+	max-width: 3rem;
+	border-left-color: var(--hairline);
+	opacity: 1;
+	visibility: visible;
+	transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#header-download {
+		transition: none;
 	}
 }
 
