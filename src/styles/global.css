@@ -1,0 +1,73 @@
+/* Tailwind entry point and design tokens for the landing page. */
+
+@import 'tailwindcss';
+
+/*
+ * Semantic colors live in plain custom properties so dark mode can swap them
+ * with one media query; the theme maps them to utilities (bg-paper, text-ink,
+ * border-hairline, ...). The accent pair comes from the app icon.
+ */
+:root {
+	--paper: #faf9f6;
+	--panel: #ffffff;
+	--ink: #000000;
+	--hairline: #ddded2;
+	--accent: #596423;
+	--accent-bright: #a5b21c;
+	--accent-tint: rgb(165 178 28 / 7%);
+}
+
+/* Not inverted light mode: lines get more transparent and the page goes deep
+   desaturated green rather than black. */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--paper: #15170e;
+		--panel: #1a1d11;
+		--ink: #f2f3ea;
+		--hairline: rgb(155 160 135 / 18%);
+		--accent: #b9c63f;
+		--accent-bright: #a5b21c;
+		--accent-tint: rgb(165 178 28 / 6%);
+	}
+}
+
+@theme {
+	--font-sans: 'Spoqa Han Sans Neo', ui-sans-serif, system-ui, -apple-system, sans-serif;
+	--font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@theme inline {
+	--color-paper: var(--paper);
+	--color-panel: var(--panel);
+	--color-ink: var(--ink);
+	--color-hairline: var(--hairline);
+	--color-accent: var(--accent);
+	--color-accent-bright: var(--accent-bright);
+	--color-accent-tint: var(--accent-tint);
+}
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+	body {
+		@apply bg-paper font-sans text-ink antialiased;
+	}
+}
+
+/* 45-degree cut corners, the same geometry as the diamond registration
+   marks. Pair with a border-radius utility that sets the bevel size;
+   browsers without corner-shape keep the plain rounded corners. */
+@utility corner-bevel {
+	corner-shape: bevel;
+}
+
+/* Dashed rail segment: 4px on, 4px off, drawn with a gradient so it works on
+   a plain 1px-wide element. */
+@utility rail-dash {
+	background-image: repeating-linear-gradient(
+		to bottom,
+		currentColor 0 4px,
+		transparent 4px 8px
+	);
+}

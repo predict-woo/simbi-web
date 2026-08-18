@@ -3,70 +3,56 @@
  * The drafting frame every landing section sits in: a five-column flex row
  * of gutter / spacer / content / spacer / gutter, where the gutters and
  * spacers carry vertical rails on their content-facing edges. On narrow
- * viewports only the gutters exist (two rails); from the wide breakpoint the
- * spacers appear and the content column gets its own pair of rails.
+ * viewports only the gutters exist (two rails); from xl the spacers appear
+ * and the content column gets its own pair of rails.
+ *
+ * With `marks`, diamonds sit on every crossing of this section's rails with
+ * the neighboring rules: the gutter rails' corners at all sizes, plus the
+ * content column's corners from xl.
  */
 import CornerMarks from './CornerMarks.astro';
+import Mark from './Mark.astro';
 import Rail from './Rail.astro';
 
 interface Props {
 	/** Base seed for this section's four rails; vary it so no two sections share a rhythm. */
 	seed: number;
-	/** Render corner marks on the content column. */
+	/** Render marks on the rail/rule crossings. */
 	marks?: boolean;
-	class?: string;
+	/** Drop the content column's inline padding (for full-width filler like the hatch strip). */
+	flush?: boolean;
 }
 
-const { seed, marks = false, class: className } = Astro.props;
+const { seed, marks = false, flush = false } = Astro.props;
 ---
 
-<section class:list={['frame', className]}>
-	<span class="gutter"><Rail seed={seed} side="right" /></span>
-	<span class="spacer"><Rail seed={seed + 1} side="right" /></span>
-	<div class="content">
+<section class="relative flex min-w-0">
+	<span class="relative w-4 shrink-0 sm:w-6 md:w-12">
+		<Rail seed={seed} side="right" />
+		{
+			marks && (
+				<>
+					<Mark class="top-0 right-0 -mr-px -mt-px" />
+					<Mark class="right-0 bottom-0 -mr-px -mb-px" />
+				</>
+			)
+		}
+	</span>
+	<span class="relative hidden xl:block xl:flex-1"><Rail seed={seed + 1} side="right" /></span>
+	<div class:list={['relative w-full min-w-0 max-w-6xl', !flush && 'px-5 sm:px-8 lg:px-10']}>
 		{marks && <CornerMarks />}
 		<slot />
 	</div>
-	<span class="spacer"><Rail seed={seed + 2} side="left" /></span>
-	<span class="gutter"><Rail seed={seed + 3} side="left" /></span>
+	<span class="relative hidden xl:block xl:flex-1"><Rail seed={seed + 2} side="left" /></span>
+	<span class="relative w-4 shrink-0 sm:w-6 md:w-12">
+		<Rail seed={seed + 3} side="left" />
+		{
+			marks && (
+				<>
+					<Mark class="top-0 left-0 -ml-px -mt-px" />
+					<Mark class="bottom-0 left-0 -ml-px -mb-px" />
+				</>
+			)
+		}
+	</span>
 </section>
-
-<style>
-	.frame {
-		position: relative;
-		display: flex;
-		min-width: 0;
-	}
-	.gutter {
-		position: relative;
-		flex-shrink: 0;
-		width: 1rem;
-	}
-	@media (min-width: 640px) {
-		.gutter {
-			width: 1.5rem;
-		}
-	}
-	@media (min-width: 900px) {
-		.gutter {
-			width: 3rem;
-		}
-	}
-	.spacer {
-		position: relative;
-		display: none;
-	}
-	@media (min-width: 1180px) {
-		.spacer {
-			display: block;
-			flex: 1 1 0;
-		}
-	}
-	.content {
-		position: relative;
-		flex: 1 1 var(--content-max-width);
-		min-width: 0;
-		max-width: var(--content-max-width);
-		margin-inline: auto;
-	}
-</style>

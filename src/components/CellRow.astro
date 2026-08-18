@@ -1,0 +1,34 @@
+---
+/**
+ * One full-bleed row of equal cells on faint graph paper, separated by
+ * vertical hairline dividers with diamonds where they meet the rules above
+ * and below. Place inside a flush Frame between full-bleed rules; on mobile
+ * the cells stack and the dividers become horizontal borders.
+ */
+import DividerMarks from './DividerMarks.astro';
+import GraphPaper from './GraphPaper.astro';
+
+interface Props {
+	items: { title: string; body: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="relative grid md:grid-cols-3">
+	<GraphPaper />
+	{
+		items.map(({ title, body }, index) => (
+			<div
+				class:list={[
+					'relative p-6 md:p-8',
+					index > 0 && 'border-t border-hairline md:border-t-0 md:border-l',
+				]}
+			>
+				{index > 0 && <DividerMarks />}
+				<h3 class="text-sm font-bold">{title}</h3>
+				<p class="mt-2 text-sm">{body}</p>
+			</div>
+		))
+	}
+</div>

@@ -1,35 +1,20 @@
 ---
 /**
- * Four small rotated-square markers on the corners of the nearest positioned
- * ancestor, like registration marks where lines cross on a technical drawing.
- * Hidden below the wide breakpoint, where the content-column rails they sit
- * on do not exist.
+ * Diamond marks on the four corners of the content column, where its rails
+ * cross the section rules. Hidden below xl, where those rails do not exist.
+ *
+ * The rails run 1px inside the content's inline edges and the rules 1px
+ * outside its block edges, so each crossing pixel sits just outside the
+ * corner in the block direction; -mb-px steps onto it.
  */
+import Mark from './Mark.astro';
+
+const corners = [
+	'top-0 left-0 -mt-px',
+	'top-0 right-0 -mt-px',
+	'bottom-0 left-0 -mb-px',
+	'bottom-0 right-0 -mb-px',
+];
 ---
 
-<span class="mark tl" aria-hidden="true"></span>
-<span class="mark tr" aria-hidden="true"></span>
-<span class="mark bl" aria-hidden="true"></span>
-<span class="mark br" aria-hidden="true"></span>
-
-<style>
-	.mark {
-		display: none;
-		position: absolute;
-		z-index: 2;
-		width: 5px;
-		height: 5px;
-		border: 1px solid var(--hairline);
-		background: var(--paper);
-		transform: rotate(45deg);
-	}
-	@media (min-width: 1180px) {
-		.mark {
-			display: block;
-		}
-	}
-	.tl { top: -4px; left: -4px; }
-	.tr { top: -4px; right: -4px; }
-	.bl { bottom: -4px; left: -4px; }
-	.br { bottom: -4px; right: -4px; }
-</style>
+{corners.map((corner) => <Mark class:list={['hidden xl:block', corner]} />)}

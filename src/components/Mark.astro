@@ -1,0 +1,23 @@
+---
+/**
+ * One diamond registration mark for a rail/rule crossing, drawn where lines
+ * cross on the drafting frame.
+ *
+ * The outer span is 1px square; position it with `class` so it covers the
+ * exact pixel where the two 1px lines overlap (using -m*-px margins to step
+ * over an edge where needed). The diamond is an SVG centered on it via plain
+ * margin layout: no transforms anywhere, so the mark can never be pixel-
+ * snapped onto a compositing layer independently of the lines it sits on.
+ */
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<span class:list={['pointer-events-none absolute z-10 size-px', className]} aria-hidden="true">
+	<svg class="absolute top-1/2 left-1/2 -mt-1.5 -ml-1.5 size-3" viewBox="0 0 12 12">
+		<path d="M6 2L10 6L6 10L2 6Z" class="fill-paper stroke-hairline"></path>
+	</svg>
+</span>

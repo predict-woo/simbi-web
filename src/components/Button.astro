@@ -1,0 +1,29 @@
+---
+/**
+ * Link button with 45-degree beveled corners, echoing the diamond
+ * registration marks on the frame.
+ */
+interface Props {
+	href: string;
+	variant?: 'primary' | 'outline';
+	class?: string;
+}
+
+const { href, variant = 'outline', class: className } = Astro.props;
+
+const variants = {
+	primary: 'bg-accent text-paper hover:bg-ink',
+	outline: 'border border-hairline bg-panel hover:border-accent hover:text-accent',
+};
+---
+
+<a
+	href={href}
+	class:list={[
+		'corner-bevel inline-block rounded-md px-4 py-2 text-sm font-medium no-underline transition-colors',
+		variants[variant],
+		className,
+	]}
+>
+	<slot />
+</a>

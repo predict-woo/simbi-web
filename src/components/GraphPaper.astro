@@ -1,34 +1,31 @@
 ---
 /**
- * Faint accent-tinted graph paper filling the nearest positioned ancestor,
- * faded out toward the top. Pure scenery: it should be felt, not seen.
+ * Faint accent-tinted graph paper filling the nearest positioned ancestor.
+ * Pure scenery: it should be felt, not seen. Instances share a pattern id;
+ * the definitions are identical, so first-match resolution is harmless.
  */
+interface Props {
+	/** Fade the pattern out toward the top (hero treatment). */
+	fade?: boolean;
+}
+
+const { fade = false } = Astro.props;
 ---
 
-<svg class="graph-paper" aria-hidden="true">
+<svg
+	class:list={[
+		'pointer-events-none absolute inset-0 size-full text-accent-bright opacity-10 dark:opacity-5',
+		fade && 'mask-t-from-0%',
+	]}
+	aria-hidden="true"
+>
 	<defs>
-		<pattern id="graph-grid" width="12" height="12" patternUnits="userSpaceOnUse" x="-1" y="-1">
+		<!-- x=0 lands the vertical strokes on x = 0.5 + 12k, the exact centers of the
+		     1px rails and cell dividers (whose positions are multiples of 12), so the
+		     pattern reinforces those lines instead of ghosting 1px beside them. -->
+		<pattern id="graph-grid" width="12" height="12" patternUnits="userSpaceOnUse" x="0" y="-1">
 			<path d="M.5 12V.5H12" fill="none" stroke="currentColor"></path>
 		</pattern>
 	</defs>
 	<rect width="100%" height="100%" fill="url(#graph-grid)"></rect>
 </svg>
-
-<style>
-	.graph-paper {
-		position: absolute;
-		inset: 0;
-		z-index: 0;
-		width: 100%;
-		height: 100%;
-		color: var(--accent-bright);
-		opacity: 0.09;
-		pointer-events: none;
-		mask-image: linear-gradient(to top, rgb(255 255 255 / 70%), transparent);
-	}
-	@media (prefers-color-scheme: dark) {
-		.graph-paper {
-			opacity: 0.07;
-		}
-	}
-</style>

@@ -1,0 +1,15 @@
+---
+/**
+ * Diamond pair for a cell whose left edge carries a vertical divider: one
+ * mark where the divider meets the rule above, one where it meets the rule
+ * below. Hidden below md, where such dividers collapse to horizontal borders.
+ *
+ * The rules run 1px outside the cell's block edges, and the divider IS the
+ * cell's left border, which sits outside the padding box that anchors
+ * absolute children: the margins step one pixel out onto the crossing.
+ */
+import Mark from './Mark.astro';
+---
+
+<Mark class="top-0 left-0 hidden -mt-px -ml-px md:block" />
+<Mark class="bottom-0 left-0 hidden -mb-px -ml-px md:block" />

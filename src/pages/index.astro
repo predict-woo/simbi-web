@@ -3,17 +3,92 @@
 import { Picture } from 'astro:assets';
 import appWindow from '../assets/app-window.png';
 import simbiIcon from '../assets/simbi-icon.svg';
-import CornerMarks from '../components/CornerMarks.astro';
+import Button from '../components/Button.astro';
+import CellRow from '../components/CellRow.astro';
 import Frame from '../components/Frame.astro';
 import GraphPaper from '../components/GraphPaper.astro';
-import '../styles/landing.css';
+import DividerMarks from '../components/DividerMarks.astro';
+import Hatch from '../components/Hatch.astro';
+import Mark from '../components/Mark.astro';
+import '../styles/global.css';
 
 const releasesUrl = 'https://github.com/predict-woo/simbi/releases/latest';
 const githubUrl = 'https://github.com/predict-woo/simbi';
 const description =
 	'Simbi is an open-source macOS notetaking app that records your meetings, ' +
-	'transcribes them live with speaker labels, and keeps everything as plain files. ' +
-	'Powered by the ChatGPT plan you already have.';
+	'transcribes them live with speaker labels, and keeps everything as plain files, ' +
+	'living symbiotically with the ChatGPT plan you already have.';
+
+const engine = [
+	{
+		title: 'Local diarization',
+		body:
+			'A compact speaker-separation model runs on the Apple Neural Engine and works out ' +
+			'who is talking in about a second, without sending audio anywhere.',
+	},
+	{
+		title: 'ChatGPT speech-to-text',
+		body:
+			'Speech is cut into clean per-speaker segments and transcribed by the same backend ' +
+			'that powers dictation in the ChatGPT app. Far more accurate than local models, and ' +
+			'easy on your battery.',
+	},
+	{
+		title: 'Codex intelligence',
+		body:
+			'Transcript fixing, file conversion, summaries, and chat are Codex threads in the ' +
+			'ChatGPT desktop app. Your plan, your models, your context.',
+	},
+];
+
+const features = [
+	{
+		title: 'Live transcript fixer',
+		body:
+			'A Codex thread watches the transcript as it grows, fixes mis-hearings using your ' +
+			'files as context, and names speakers when the conversation reveals who they are.',
+	},
+	{
+		title: 'AI notes with citations',
+		body:
+			'After each recording Simbi writes a summary whose citations are timestamps. Click ' +
+			'one and playback jumps to that moment in the audio.',
+	},
+	{
+		title: 'File import',
+		body:
+			'Drop a PDF or a slide deck onto a note. Codex converts it to clean Markdown that ' +
+			'becomes context for transcript fixes and chat.',
+	},
+	{
+		title: 'Chat with your notes',
+		body: 'One click opens a Codex chat with your note, transcript, and files already in context.',
+	},
+	{
+		title: 'System audio capture',
+		body:
+			'Record your mic and the other side of the call together: system audio is captured ' +
+			'and mixed into one timeline.',
+	},
+	{
+		title: 'Crash-safe recording',
+		body:
+			'Audio streams straight to disk in a crash-tolerant format. If your Mac dies ' +
+			'mid-meeting, the recording survives.',
+	},
+];
+
+const tree = [
+	['note.md', 'your notes, plain Markdown'],
+	['audio.webm', 'the recording, Opus'],
+	['transcript.vtt', 'transcript with speaker labels'],
+	['files/', 'anything you drop in'],
+	['context/', 'Markdown mirrors, written by Codex'],
+];
+
+const featureRows = [features.slice(0, 3), features.slice(3)];
+
+const claimClass = 'relative flex flex-1 items-center gap-3 p-6 text-sm md:px-10';
 ---
 
 <!doctype html>
@@ -24,494 +99,191 @@ const description =
 		<title>Simbi, notetaking that listens</title>
 		<meta name="description" content={description} />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="https://spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css"
+		/>
 		<meta property="og:title" content="Simbi" />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={new URL(appWindow.src, Astro.site)} />
 	</head>
 	<body>
 		<Frame seed={10}>
-			<header class="site-header">
-				<a class="wordmark" href="/">
+			<header class="flex items-center justify-between py-3.5">
+				<a href="/" class="flex items-center gap-2 text-lg font-bold">
 					<img src={simbiIcon.src} alt="" width="26" height="26" />
 					<span>Simbi</span>
 				</a>
-				<nav>
-					<a href="/docs/">Docs</a>
-					<a href={githubUrl}>GitHub</a>
-					<a class="button primary" href={releasesUrl}>Download</a>
+				<nav class="flex items-center gap-6">
+					<a href="/docs/" class="text-sm transition-colors hover:text-accent">Docs</a>
+					<a href={githubUrl} class="text-sm transition-colors hover:text-accent">GitHub</a>
+					<Button href={releasesUrl} variant="primary" class="px-4 py-1.5">Download</Button>
 				</nav>
 			</header>
 		</Frame>
 
-		<hr class="rule" />
+		<hr class="border-hairline" />
 
-		<Frame seed={20} marks>
-			<div class="hero">
-				<GraphPaper />
-				<p class="label eyebrow">Open source · macOS 14+</p>
-				<h1>Notetaking that <em class="serif">listens</em>.</h1>
-				<p class="lede">
-					Simbi records your meetings, transcribes them live with speaker labels, and writes
-					everything to plain files on disk. Powered by the ChatGPT plan you already have, even
-					the free one.
+		<Frame seed={20} marks flush>
+			<div class="relative flex flex-col items-center px-5 pt-10 text-center sm:px-8 md:pt-16 lg:px-10">
+				<GraphPaper fade />
+				<img
+					src={simbiIcon.src}
+					alt=""
+					width="96"
+					height="96"
+					class="w-16 drop-shadow-xl md:w-20"
+				/>
+				<h1 class="mt-5 text-4xl font-bold tracking-tight md:text-6xl">
+					Notetaking that listens.
+				</h1>
+				<p class="mt-4 max-w-xl md:text-lg">
+					Live, speaker-labelled meeting transcripts, saved as plain files.
+					<br />
+					Simbi lives symbiotically with the ChatGPT plan you already have.
 				</p>
-				<div class="actions">
-					<a class="button primary" href={releasesUrl}>Download for macOS</a>
-					<a class="button" href="/docs/">Read the docs</a>
+				<div class="mt-6 flex flex-wrap justify-center gap-3">
+					<Button href={releasesUrl} variant="primary">Download for macOS</Button>
+					<Button href="/docs/">Read the docs</Button>
 				</div>
-				<p class="micro">Free and open source · Direct download · Works with the ChatGPT app</p>
-				<figure class="window">
-					<CornerMarks />
+				<figure class="relative z-10 my-8 w-full max-w-5xl md:my-10">
 					<Picture
 						src={appWindow}
 						alt="The Simbi app: a note with AI summary, timestamped citations, and a live speaker-labelled transcript beside the recording"
 						formats={['avif', 'webp']}
 						widths={[720, 1088, 1600, appWindow.width]}
-						sizes="(max-width: 1180px) calc(100vw - 2rem), 1088px"
+						sizes="(max-width: 1280px) calc(100vw - 2rem), 1152px"
 						loading="eager"
 					/>
 				</figure>
 			</div>
 		</Frame>
 
-		<hr class="rule" />
+		<hr class="border-hairline" />
 
 		<Frame seed={30} marks>
-			<div class="section">
-				<p class="label">01 · The engine</p>
-				<h2>Your ChatGPT subscription does the heavy lifting.</h2>
-				<p class="lead">
+			<section class="py-10 md:py-16">
+				<h2 class="text-3xl font-bold tracking-tight md:text-4xl">
+					Your ChatGPT subscription does the heavy lifting.
+				</h2>
+				<p class="mt-4 max-w-2xl">
 					Even a free ChatGPT account includes dictation-grade speech-to-text and a generous
 					amount of model usage. Simbi combines them with a small speaker model that runs
 					entirely on your Mac.
 				</p>
-				<div class="columns">
-					<div>
-						<h3>Local diarization</h3>
-						<p>
-							A compact speaker-separation model runs on the Apple Neural Engine and works out
-							who is talking in about a second, without sending audio anywhere.
-						</p>
-					</div>
-					<div>
-						<h3>ChatGPT speech-to-text</h3>
-						<p>
-							Speech is cut into clean per-speaker segments and transcribed by the same backend
-							that powers dictation in the ChatGPT app. Far more accurate than local models,
-							and easy on your battery.
-						</p>
-					</div>
-					<div>
-						<h3>Codex intelligence</h3>
-						<p>
-							Transcript fixing, file conversion, summaries, and chat are Codex threads in the
-							ChatGPT desktop app. Your plan, your models, your context.
-						</p>
-					</div>
-				</div>
-			</div>
+			</section>
 		</Frame>
 
-		<hr class="rule" />
+		<hr class="border-hairline" />
+
+		<Frame seed={34} marks flush>
+			<CellRow items={engine} />
+		</Frame>
+
+		<hr class="border-hairline" />
 
 		<Frame seed={40} marks>
-			<div class="section">
-				<p class="label">02 · No lock-in</p>
-				<h2>Every note is just a folder.</h2>
-				<p class="lead">
+			<section class="py-10 md:py-16">
+				<h2 class="text-3xl font-bold tracking-tight md:text-4xl">Every note is just a folder.</h2>
+				<p class="mt-4 max-w-2xl">
 					No database, no proprietary format, zero walls. If you can see it in Finder, it is
 					yours.
 				</p>
-				<div class="split">
+			</section>
+		</Frame>
+
+		<hr class="border-hairline" />
+
+		<Frame seed={44} marks flush>
+			<div class="grid md:grid-cols-5">
+				<div class="relative p-6 md:col-span-3 md:p-12">
+					<Hatch />
 					<pre
-						class="tree"><code>~/Simbi/Work/2026-07-15 Standup/
-├─ note.md          <span class="comment">your notes, plain Markdown</span>
-├─ audio.webm       <span class="comment">the recording, Opus</span>
-├─ transcript.vtt   <span class="comment">transcript with speaker labels</span>
-├─ files/           <span class="comment">anything you drop in</span>
-└─ context/         <span class="comment">Markdown mirrors, written by Codex</span></code></pre>
-					<ul class="claims">
-						<li>
+						class="relative overflow-x-auto rounded-md border border-accent-bright/40 bg-paper p-6 font-mono text-sm leading-loose"><code>~/Simbi/Work/2026-07-15 Standup/
+{tree.map(([name, note], i) => `${i === tree.length - 1 ? '└─' : '├─'} ${name.padEnd(17)}${note}\n`)}</code></pre>
+				</div>
+				<ul
+					class="relative flex flex-col border-t border-hairline md:col-span-2 md:border-t-0 md:border-l"
+				>
+					<DividerMarks />
+					<li class={claimClass}>
+						<span>
 							Open your Simbi home folder in Obsidian and your notes read perfectly: they are
 							ordinary Markdown.
-						</li>
-						<li>
-							Drop <code>audio.webm</code> and <code>transcript.vtt</code> into VLC and the
-							recording plays with speaker-labelled subtitles in sync.
-						</li>
-						<li>
+						</span>
+					</li>
+					<li class:list={[claimClass, 'border-t border-hairline']}>
+						<Mark class="top-0 left-0 hidden -mt-px -ml-px md:block" />
+						<Mark class="top-0 right-0 hidden -mt-px md:block" />
+						<span>
+							Drop <code class="font-mono text-xs">audio.webm</code> and{' '}
+							<code class="font-mono text-xs">transcript.vtt</code> into VLC and the recording
+							plays with speaker-labelled subtitles in sync.
+						</span>
+					</li>
+					<li class:list={[claimClass, 'border-t border-hairline']}>
+						<Mark class="top-0 left-0 hidden -mt-px -ml-px md:block" />
+						<Mark class="top-0 right-0 hidden -mt-px md:block" />
+						<span>
 							Sync it with git or iCloud, grep it, back it up: anything that works on files
 							works on Simbi.
-						</li>
-					</ul>
-				</div>
+						</span>
+					</li>
+				</ul>
 			</div>
 		</Frame>
 
-		<hr class="rule" />
+		<hr class="border-hairline" />
 
 		<Frame seed={50} marks>
-			<div class="section">
-				<p class="label">03 · Built in</p>
-				<h2>Small app, sharp tools.</h2>
-				<div class="grid">
-					<div>
-						<h3>Live transcript fixer</h3>
-						<p>
-							A Codex thread watches the transcript as it grows, fixes mis-hearings using your
-							files as context, and names speakers when the conversation reveals who they are.
-						</p>
-					</div>
-					<div>
-						<h3>AI notes with citations</h3>
-						<p>
-							After each recording Simbi writes a summary whose citations are timestamps.
-							Click one and playback jumps to that moment in the audio.
-						</p>
-					</div>
-					<div>
-						<h3>File import</h3>
-						<p>
-							Drop a PDF or a slide deck onto a note. Codex converts it to clean Markdown that
-							becomes context for transcript fixes and chat.
-						</p>
-					</div>
-					<div>
-						<h3>Chat with your notes</h3>
-						<p>
-							One click opens a Codex chat with your note, transcript, and files already in
-							context.
-						</p>
-					</div>
-					<div>
-						<h3>System audio capture</h3>
-						<p>
-							Record your mic and the other side of the call together: system audio is captured
-							and mixed into one timeline.
-						</p>
-					</div>
-					<div>
-						<h3>Crash-safe recording</h3>
-						<p>
-							Audio streams straight to disk in a crash-tolerant format. If your Mac dies
-							mid-meeting, the recording survives.
-						</p>
-					</div>
-				</div>
-			</div>
+			<section class="py-10 md:py-16">
+				<h2 class="text-3xl font-bold tracking-tight md:text-4xl">Small app, sharp tools.</h2>
+			</section>
 		</Frame>
 
-		<hr class="rule" />
+		{
+			featureRows.map((row, rowIndex) => (
+				<>
+					<hr class="border-hairline" />
+					<Frame seed={54 + rowIndex * 4} marks flush>
+						<CellRow items={row} />
+					</Frame>
+				</>
+			))
+		}
 
-		<Frame seed={60}>
-			<div class="hatch" aria-hidden="true">
-				<svg width="100%" height="100%">
-					<defs>
-						<pattern
-							id="hatch-lines"
-							width="5"
-							height="5"
-							patternUnits="userSpaceOnUse"
-							patternTransform="rotate(45)">
-							<line x1="0" y1="0" x2="0" y2="5" stroke="currentColor" stroke-width="1"></line>
-						</pattern>
-					</defs>
-					<rect width="100%" height="100%" fill="url(#hatch-lines)"></rect>
-				</svg>
-			</div>
+		<hr class="border-hairline" />
+
+		<Frame seed={60} flush>
+			<div class="relative h-10" aria-hidden="true"><Hatch /></div>
 		</Frame>
 
-		<hr class="rule" />
+		<hr class="border-hairline" />
 
 		<Frame seed={70} marks>
-			<div class="outro">
-				<h2>Zero <em class="serif">walls</em> around your notes.</h2>
-				<div class="actions">
-					<a class="button primary" href={releasesUrl}>Download for macOS</a>
-					<a class="button" href={githubUrl}>View on GitHub</a>
+			<section class="flex flex-col items-center py-16 text-center md:py-24">
+				<h2 class="text-3xl font-bold tracking-tight md:text-4xl">
+					Zero walls around your notes.
+				</h2>
+				<div class="mt-8 flex flex-wrap justify-center gap-3">
+					<Button href={releasesUrl} variant="primary">Download for macOS</Button>
+					<Button href={githubUrl}>View on GitHub</Button>
 				</div>
-			</div>
+			</section>
 		</Frame>
 
-		<hr class="rule" />
+		<hr class="border-hairline" />
 
 		<Frame seed={80}>
-			<footer class="site-footer">
+			<footer class="flex flex-wrap items-center justify-between gap-3 py-6 text-sm">
 				<span>MIT licensed · © 2026 Andrew Sangwoo Ye</span>
-				<nav>
-					<a href="/docs/">Docs</a>
-					<a href={githubUrl}>GitHub</a>
-					<a href={releasesUrl}>Releases</a>
+				<nav class="flex gap-6">
+					<a href="/docs/" class="transition-colors hover:text-accent">Docs</a>
+					<a href={githubUrl} class="transition-colors hover:text-accent">GitHub</a>
+					<a href={releasesUrl} class="transition-colors hover:text-accent">Releases</a>
 				</nav>
 			</footer>
 		</Frame>
 	</body>
 </html>
-
-<style>
-	/* Header */
-	.site-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding-block: 0.85rem;
-	}
-	.wordmark {
-		display: flex;
-		align-items: center;
-		gap: 0.55rem;
-		font-weight: 650;
-		font-size: 1.0625rem;
-		text-decoration: none;
-	}
-	.site-header nav {
-		display: flex;
-		align-items: center;
-		gap: 1.4rem;
-	}
-	.site-header nav > a:not(.button) {
-		font-size: 0.875rem;
-		color: var(--muted);
-		text-decoration: none;
-	}
-	.site-header nav > a:not(.button):hover {
-		color: var(--ink);
-	}
-	.site-header .button {
-		padding: 0.4rem 0.85rem;
-	}
-
-	/* Hero */
-	.hero {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		padding: clamp(3.5rem, 8vw, 6rem) 0 0;
-	}
-	.eyebrow::before {
-		content: '';
-		display: inline-block;
-		width: 5px;
-		height: 5px;
-		margin-right: 0.6rem;
-		border: 1px solid currentColor;
-		transform: rotate(45deg) translateY(-1px);
-	}
-	h1 {
-		margin-top: 1.1rem;
-		font-size: clamp(2.6rem, 7vw, 4.25rem);
-		line-height: 1.05;
-		letter-spacing: -0.025em;
-		font-weight: 600;
-	}
-	h1 .serif {
-		font-weight: 500;
-	}
-	.lede {
-		margin-top: 1.4rem;
-		max-width: 38rem;
-		font-size: 1.125rem;
-		color: var(--muted);
-	}
-	.actions {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 0.75rem;
-		margin-top: 2rem;
-	}
-	.micro {
-		margin-top: 1.1rem;
-		font-family: var(--font-mono);
-		font-size: 0.71875rem;
-		letter-spacing: 0.03em;
-		color: var(--muted);
-	}
-	.window {
-		position: relative;
-		z-index: 1;
-		margin: clamp(2.5rem, 6vw, 4.5rem) 0 clamp(2rem, 5vw, 3.5rem);
-		border: 1px solid var(--hairline);
-		border-radius: 12px;
-		overflow: hidden;
-		box-shadow: 0 24px 70px -30px rgb(29 31 22 / 35%);
-		background: var(--panel);
-	}
-	.window img {
-		width: 100%;
-		height: auto;
-	}
-
-	/* Shared section shell */
-	.section {
-		padding-block: clamp(3rem, 7vw, 5rem);
-	}
-	h2 {
-		margin-top: 0.9rem;
-		font-size: clamp(1.6rem, 3.5vw, 2.25rem);
-		line-height: 1.15;
-		letter-spacing: -0.015em;
-		font-weight: 600;
-		max-width: 34ch;
-	}
-	.lead {
-		margin-top: 1rem;
-		max-width: 44rem;
-		color: var(--muted);
-	}
-	h3 {
-		font-size: 0.9375rem;
-		font-weight: 600;
-	}
-	h3 + p {
-		margin-top: 0.5rem;
-		font-size: 0.9063rem;
-		color: var(--muted);
-	}
-
-	/* 01: three hairline-divided columns */
-	.columns {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		margin-top: 2.75rem;
-	}
-	.columns > div {
-		padding: 0.25rem 1.5rem;
-		border-left: 1px solid var(--hairline);
-	}
-	.columns > div:first-child {
-		padding-left: 0;
-		border-left: 0;
-	}
-	@media (max-width: 900px) {
-		.columns {
-			grid-template-columns: 1fr;
-			gap: 1.75rem;
-		}
-		.columns > div {
-			padding-inline: 0;
-			border-left: 0;
-		}
-	}
-
-	/* 02: folder tree beside the claims it earns */
-	.split {
-		display: grid;
-		grid-template-columns: minmax(0, 1.2fr) 1fr;
-		gap: clamp(1.5rem, 4vw, 3.5rem);
-		align-items: center;
-		margin-top: 2.5rem;
-	}
-	@media (max-width: 900px) {
-		.split {
-			grid-template-columns: 1fr;
-		}
-	}
-	.tree {
-		margin: 0;
-		padding: 1.4rem 1.5rem;
-		border: 1px solid color-mix(in oklab, var(--accent-bright) 35%, var(--hairline));
-		border-radius: 4px;
-		background: linear-gradient(to bottom, var(--accent-tint), transparent);
-		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		line-height: 1.9;
-		overflow-x: auto;
-	}
-	.tree .comment {
-		color: var(--muted);
-	}
-	.claims {
-		list-style: none;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 1.1rem;
-	}
-	.claims li {
-		position: relative;
-		padding-left: 1.4rem;
-		font-size: 0.9375rem;
-		color: var(--muted);
-	}
-	.claims li::before {
-		content: '';
-		position: absolute;
-		left: 2px;
-		top: 0.55em;
-		width: 5px;
-		height: 5px;
-		border: 1px solid var(--accent);
-		transform: rotate(45deg);
-	}
-	.claims code {
-		font-family: var(--font-mono);
-		font-size: 0.85em;
-		color: var(--ink);
-	}
-
-	/* 03: feature grid drawn with 1px gaps over the hairline color */
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1px;
-		margin-top: 2.75rem;
-		background: var(--hairline);
-		border: 1px solid var(--hairline);
-	}
-	.grid > div {
-		padding: 1.5rem;
-		background: var(--paper);
-	}
-	@media (max-width: 900px) {
-		.grid {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	/* Hatched filler strip: the drafting convention for void space */
-	.hatch {
-		height: 2.5rem;
-		color: var(--hairline);
-	}
-	.hatch svg {
-		display: block;
-	}
-
-	/* Outro + footer */
-	.outro {
-		padding-block: clamp(3.5rem, 8vw, 5.5rem);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-	}
-	.outro h2 {
-		margin-top: 0;
-	}
-	.site-footer {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.75rem;
-		padding-block: 1.4rem;
-		font-family: var(--font-mono);
-		font-size: 0.71875rem;
-		letter-spacing: 0.02em;
-		color: var(--muted);
-	}
-	.site-footer nav {
-		display: flex;
-		gap: 1.4rem;
-	}
-	.site-footer a {
-		color: inherit;
-		text-decoration: none;
-	}
-	.site-footer a:hover {
-		color: var(--ink);
-	}
-</style>
