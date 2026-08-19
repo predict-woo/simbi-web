@@ -1,0 +1,476 @@
+---
+/**
+ * The "assembled, not invented" diagram: six open-source projects feeding into
+ * Simbi at the centre.
+ *
+ * Two layouts, one mechanism. Each has its own coordinate space, used both as
+ * the connector SVG's viewBox and as the source of the percentage anchors the
+ * HTML nodes sit on, so the elbows always meet the tiles they belong to:
+ *
+ *   wide   three tiles per side converging on the centre
+ *   middle two columns feeding a spine, proportioned for a roomy box
+ *   narrow the same stacked shape, proportioned for a phone
+ *
+ * Nodes carry data-col/data-row rather than inline coordinates; the anchors,
+ * tile sizes, and aspect ratio are custom properties swapped by one container
+ * query. Sizes are in `cqw` so both layers scale together, and the query is on
+ * the diagram's own width rather than the viewport, since that is what the
+ * geometry actually has to fit.
+ */
+import { Image } from 'astro:assets';
+import simbiIcon from '../assets/simbi-icon.svg';
+import anydoc from '../assets/logos/anydoc.png';
+import codex from '../assets/logos/codex.png';
+import fluidaudio from '../assets/logos/fluidaudio.png';
+import ghostty from '../assets/logos/ghostty.png';
+import sparkle from '../assets/logos/sparkle.png';
+import swiftMarkdownEngine from '../assets/logos/swift-markdown-engine.png';
+
+const nodes = [
+	{
+		name: 'Codex CLI',
+		role: 'agent threads',
+		href: 'https://github.com/openai/codex',
+		icon: codex,
+		col: 'left',
+		row: 'top',
+	},
+	{
+		name: 'Ghostty',
+		role: 'embedded terminal',
+		href: 'https://github.com/ghostty-org/ghostty',
+		icon: ghostty,
+		col: 'left',
+		row: 'middle',
+	},
+	{
+		name: 'FluidAudio',
+		role: 'on-device speech',
+		href: 'https://github.com/FluidInference/FluidAudio',
+		icon: fluidaudio,
+		col: 'left',
+		row: 'bottom',
+	},
+	{
+		name: 'anydoc',
+		role: 'file conversion',
+		href: 'https://github.com/firecrawl/anydoc',
+		icon: anydoc,
+		col: 'right',
+		row: 'top',
+	},
+	{
+		name: 'swift-markdown-engine',
+		role: 'the editor',
+		href: 'https://github.com/nodes-app/swift-markdown-engine',
+		icon: swiftMarkdownEngine,
+		col: 'right',
+		row: 'middle',
+	},
+	{
+		name: 'Sparkle',
+		role: 'app updates',
+		href: 'https://github.com/sparkle-project/Sparkle',
+		icon: sparkle,
+		col: 'right',
+		row: 'bottom',
+	},
+];
+
+const diamond = (cx: number, cy: number, r = 7) =>
+	`M ${cx} ${cy - r} L ${cx + r} ${cy} L ${cx} ${cy + r} L ${cx - r} ${cy} Z`;
+
+/*
+ * Wide: 1200x560, three tiles per side converging on the centre. The box is
+ * taller than the drawing needs because row pitch is what decides how narrow
+ * this layout can go: the labels reach the tile below before the horizontal
+ * runs ever get too short.
+ *
+ * Each side is one path down its spine (top stub, vertical, bottom stub) plus
+ * one trunk crossing it at the junction, so the static 4/4 dashes never double
+ * up. Tile edges sit at x=192 and x=1008, the centre tile spans 520..680, and
+ * the spines stand at x=330 and x=870.
+ */
+const wide = {
+	viewBox: '0 0 1200 560',
+	skeleton: [
+		'M 192 100 H 310 Q 330 100 330 120 V 440 Q 330 460 310 460 H 192',
+		'M 192 280 H 520',
+		'M 1008 100 H 890 Q 870 100 870 120 V 440 Q 870 460 890 460 H 1008',
+		'M 1008 280 H 680',
+	],
+	routes: [
+		'M 192 100 H 310 Q 330 100 330 120 V 260 Q 330 280 350 280 H 520',
+		'M 192 280 H 520',
+		'M 192 460 H 310 Q 330 460 330 440 V 300 Q 330 280 350 280 H 520',
+		'M 1008 100 H 890 Q 870 100 870 120 V 260 Q 870 280 850 280 H 680',
+		'M 1008 280 H 680',
+		'M 1008 460 H 890 Q 870 460 870 440 V 300 Q 870 280 850 280 H 680',
+	],
+	junctions: [diamond(330, 280), diamond(870, 280)],
+	// Down one side then the other, so the stagger reads around the diagram.
+	stepOrder: [0, 2, 4, 1, 3, 5],
+};
+
+/**
+ * Two columns turning inward onto one spine, which runs from the first junction
+ * down into Simbi. The elbows stop exactly where the spine starts, so the static
+ * layer never doubles up; the routes continue down it, so the pulses merge and
+ * travel the last stretch together.
+ *
+ * Both stacked layouts are this same shape at different proportions, which is
+ * the whole reason it is a builder: a wider box is not the narrow one stretched,
+ * it is smaller tiles and longer horizontal runs.
+ */
+const spineLayout = ({ w, h, colX, tileHalf, rows, spineEnd, radius }) => {
+	const cx = w / 2;
+	const elbows = rows.flatMap((y) => [
+		`M ${colX + tileHalf} ${y} H ${cx - radius} Q ${cx} ${y} ${cx} ${y + radius}`,
+		`M ${w - colX - tileHalf} ${y} H ${cx + radius} Q ${cx} ${y} ${cx} ${y + radius}`,
+	]);
+	return {
+		viewBox: `0 0 ${w} ${h}`,
+		skeleton: [`M ${cx} ${rows[0] + radius} V ${spineEnd}`, ...elbows],
+		routes: elbows.map((elbow) => `${elbow} V ${spineEnd}`),
+		junctions: rows.map((y) => diamond(cx, y + radius)),
+		// Already alternating left/right, so plain order alternates the pulses.
+		stepOrder: [0, 1, 2, 3, 4, 5],
+	};
+};
+
+/** Middle: proportioned to spend the extra width on the runs, not the tiles. */
+const middle = spineLayout({
+	w: 680,
+	h: 630,
+	colX: 150,
+	tileHalf: 46,
+	rows: [80, 250, 420],
+	spineEnd: 505,
+	radius: 28,
+});
+
+/** Narrow: a phone column, where the tiles get the space instead. */
+const narrow = spineLayout({
+	w: 400,
+	h: 680,
+	colX: 95,
+	tileHalf: 35,
+	rows: [75, 260, 445],
+	spineEnd: 555,
+	radius: 20,
+});
+---
+
+<div class="diagram">
+	<div class="stage">
+		{
+			[
+				{ layout: wide, className: 'connectors-wide' },
+				{ layout: middle, className: 'connectors-middle' },
+				{ layout: narrow, className: 'connectors-narrow' },
+			].map(({ layout, className }) => (
+				<svg
+					class:list={['connectors', className]}
+					viewBox={layout.viewBox}
+					preserveAspectRatio="none"
+					fill="none"
+					aria-hidden="true"
+				>
+					{layout.skeleton.map((d) => (
+						<path d={d} class="skeleton" />
+					))}
+					{layout.routes.map((d, index) => (
+						<path
+							d={d}
+							class="route"
+							pathLength="100"
+							style={`--step: ${layout.stepOrder[index]}`}
+						/>
+					))}
+					{layout.junctions.map((d) => (
+						<path d={d} class="junction" />
+					))}
+				</svg>
+			))
+		}
+
+		{
+			nodes.map(({ name, role, href, icon, col, row }) => (
+				<a class="node" href={href} data-col={col} data-row={row}>
+					<span class="tile">
+						<Image src={icon} alt="" width={112} height={112} densities={[1, 2]} />
+					</span>
+					<span class="label">
+						<span class="name">{name}</span>
+						<span class="role">{role}</span>
+					</span>
+				</a>
+			))
+		}
+
+		<div class="node node-center" data-col="center" data-row="center">
+			<span class="tile tile-center">
+				<img src={simbiIcon.src} alt="Simbi" width="88" height="88" />
+			</span>
+			<span class="label">
+				<span class="name text-accent">Simbi</span>
+				<span class="role">the glue</span>
+			</span>
+		</div>
+	</div>
+</div>
+
+<style>
+	/*
+	 * Two containers with different jobs. The outer one is full width and decides
+	 * which layout runs; the inner one is the drawing itself and is what every
+	 * `cqw` size resolves against. They have to be separate because the narrow
+	 * layout caps its width: sizing off the full width there would inflate the
+	 * tiles well past the diagram they sit in.
+	 */
+	.diagram {
+		container: builton / inline-size;
+		padding-block: 2.5rem;
+	}
+
+	/* Narrow is the default; the container queries below swap in the wider two. */
+	.stage {
+		container-type: inline-size;
+		position: relative;
+		aspect-ratio: 400 / 680;
+		--col-left: 23.75%;
+		--col-right: 76.25%;
+		--row-top: 11.0294%;
+		--row-middle: 38.2353%;
+		--row-bottom: 65.4412%;
+		--row-center: 88.2353%;
+		--tile: 17.5cqw;
+		--tile-center: 22.5cqw;
+		--label-width: 45cqw;
+	}
+
+	.connectors {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.connectors-wide,
+	.connectors-middle {
+		display: none;
+	}
+
+	/*
+	 * Both viewBoxes match their stage's aspect ratio, so nothing distorts, but
+	 * non-scaling-stroke pins widths and dashes to screen units regardless of
+	 * scale. That keeps the 4/4 dash identical to the page's rails at every size.
+	 */
+	.skeleton,
+	.junction,
+	.route {
+		vector-effect: non-scaling-stroke;
+		stroke-width: 1;
+	}
+
+	/*
+	 * The rails use --hairline because they are scenery. Here the lines carry the
+	 * meaning, so they step up to a muted tint that still stays quiet.
+	 */
+	.skeleton {
+		stroke: color-mix(in oklab, var(--muted) 42%, transparent);
+		stroke-dasharray: 4 4;
+	}
+
+	.junction {
+		fill: var(--paper);
+		stroke: color-mix(in oklab, var(--muted) 42%, transparent);
+	}
+
+	/*
+	 * pathLength normalises every route to 100 units, so one dash length and one
+	 * duration read identically on the short middle runs and the long elbowed
+	 * ones. Negative delays stagger the six without an empty first cycle.
+	 */
+	.route {
+		stroke: var(--accent);
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-dasharray: 9 91;
+		animation: flow 3s linear infinite;
+		animation-delay: calc(var(--step) * -0.5s);
+	}
+
+	@keyframes flow {
+		from {
+			stroke-dashoffset: 100;
+		}
+		to {
+			stroke-dashoffset: 0;
+		}
+	}
+
+	.node {
+		position: absolute;
+		left: var(--x);
+		top: var(--y);
+		display: flex;
+		width: var(--label-width);
+		flex-direction: column;
+		align-items: center;
+		gap: 0.625rem;
+		text-align: center;
+		/* Anchor on the tile's centre, not the node's, so the elbows meet it. */
+		transform: translate(-50%, calc(var(--tile) / -2));
+	}
+
+	.node[data-col='left'] {
+		--x: var(--col-left);
+	}
+
+	.node[data-col='right'] {
+		--x: var(--col-right);
+	}
+
+	.node[data-col='center'] {
+		--x: 50%;
+	}
+
+	.node[data-row='top'] {
+		--y: var(--row-top);
+	}
+
+	.node[data-row='middle'] {
+		--y: var(--row-middle);
+	}
+
+	.node[data-row='bottom'] {
+		--y: var(--row-bottom);
+	}
+
+	.node[data-row='center'] {
+		--y: var(--row-center);
+		transform: translate(-50%, calc(var(--tile-center) / -2));
+	}
+
+	.tile {
+		display: flex;
+		width: var(--tile);
+		height: var(--tile);
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--hairline);
+		border-radius: 0.25rem;
+		corner-shape: bevel;
+		background-color: var(--panel);
+		transition: border-color 140ms ease;
+	}
+
+	.tile img {
+		width: 66%;
+		height: 66%;
+	}
+
+	.tile-center {
+		width: var(--tile-center);
+		height: var(--tile-center);
+		border-color: var(--accent);
+	}
+
+	/* The Simbi mark carries its own white backplate, which reads as a slab on
+	   the dark panel at full size; a smaller fill keeps it framed. */
+	.tile-center img {
+		width: 58%;
+		height: 58%;
+	}
+
+	.node:hover .tile {
+		border-color: var(--accent);
+	}
+
+	.node:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 4px;
+	}
+
+	.label {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.3;
+	}
+
+	.name {
+		font-size: 0.8125rem;
+		font-weight: 700;
+		overflow-wrap: anywhere;
+	}
+
+	.role {
+		font-size: 0.75rem;
+		color: var(--muted);
+	}
+
+	/*
+	 * Switch on the diagram's own width, not the viewport's: the wide layout only
+	 * needs room for its two horizontal runs, so it can hold well below the point
+	 * a viewport breakpoint would have dropped it.
+	 */
+	/*
+	 * Three bands. The stacked shape carries the two narrower ones because a 3+3
+	 * split has no room for its horizontal runs below ~44rem; what changes at
+	 * 27rem is the proportions, so the extra width goes into the runs rather than
+	 * inflating the tiles.
+	 */
+	@container builton (min-width: 27rem) {
+		.stage {
+			aspect-ratio: 680 / 630;
+			--col-left: 22.0588%;
+			--col-right: 77.9412%;
+			--row-top: 12.6984%;
+			--row-middle: 39.6825%;
+			--row-bottom: 66.6667%;
+			--row-center: 88.8889%;
+			--tile: 13.5294cqw;
+			--tile-center: 16.1765cqw;
+			--label-width: 27.9412cqw;
+		}
+
+		.connectors-middle {
+			display: block;
+		}
+
+		.connectors-narrow {
+			display: none;
+		}
+	}
+
+	@container builton (min-width: 44rem) {
+		.stage {
+			aspect-ratio: 1200 / 560;
+			--col-left: 12.5%;
+			--col-right: 87.5%;
+			--row-top: 17.8571%;
+			--row-middle: 50%;
+			--row-bottom: 82.1429%;
+			--row-center: 50%;
+			--tile: 7cqw;
+			--tile-center: 13.3333cqw;
+			--label-width: 25cqw;
+		}
+
+		.connectors-wide {
+			display: block;
+		}
+
+		.connectors-middle {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		/* No travelling pulse; the skeleton alone carries the connections. */
+		.route {
+			display: none;
+		}
+	}
+</style>

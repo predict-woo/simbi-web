@@ -4,6 +4,7 @@ import { getImage } from 'astro:assets';
 import appWindow from '../assets/app-window.png';
 import appWindowDark from '../assets/app-window-dark.png';
 import simbiIcon from '../assets/simbi-icon.svg';
+import BuiltOn from '../components/BuiltOn.astro';
 import Button from '../components/Button.astro';
 import CellRow from '../components/CellRow.astro';
 import Frame from '../components/Frame.astro';
@@ -700,6 +701,31 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 
 		<Frame seed={34} marks flush>
 			<CellRow items={engine} />
+		</Frame>
+
+		<hr class="border-hairline" />
+
+		<Frame seed={90} marks>
+			<section class="py-10 md:py-16">
+				<h2 class="text-3xl font-bold tracking-tight md:text-4xl">
+					Simbi doesn't reinvent the wheel.
+				</h2>
+				<p class="mt-4 max-w-2xl">
+					The hard parts are already solved, and solved well. Simbi assembles mature
+					open-source projects and spends its own code on the glue: mixing two audio sources
+					onto one timeline, deciding where to cut speech, and keeping every note a plain
+					folder.
+				</p>
+			</section>
+		</Frame>
+
+		<hr class="border-hairline" />
+
+		<Frame seed={94} marks flush>
+			<div class="relative">
+				<GraphPaper />
+				<BuiltOn />
+			</div>
 		</Frame>
 
 		<hr class="border-hairline" />
