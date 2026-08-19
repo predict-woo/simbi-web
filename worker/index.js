@@ -1,3 +1,5 @@
+import { legalDocumentForPath, legalSourceUrl, renderLegalMarkdown } from '../src/lib/legal-docs.js';
+
 const DOWNLOAD_HOST = 'download.getsimbi.app';
 const DOWNLOAD_PATH = '/darwin-arm64';
 const DOWNLOAD_URL = `https://${DOWNLOAD_HOST}${DOWNLOAD_PATH}`;
@@ -5,6 +7,37 @@ const EMAIL_PATH = '/api/email-download';
 const SITE_HOSTS = new Set(['getsimbi.app', 'www.getsimbi.app']);
 const SITE_ORIGINS = new Set(['https://getsimbi.app', 'https://www.getsimbi.app']);
 const LATEST_RELEASE_API = 'https://api.github.com/repos/predict-woo/simbi/releases/latest';
+
+async function serveLegalPage(request, env, document) {
+	const shell = await env.ASSETS.fetch(request);
+	if (!shell.ok) return shell;
+
+	try {
+		const source = await fetch(legalSourceUrl(document), {
+			cf: { cacheEverything: true, cacheTtl: 300 },
+		});
+		if (!source.ok) throw new Error(`Legal document request failed: ${source.status}`);
+
+		const content = renderLegalMarkdown(await source.text());
+		const transformed = new HTMLRewriter()
+			.on('#legal-content', {
+				element(element) {
+					element.setInnerContent(content, { html: true });
+				},
+			})
+			.transform(shell);
+		const headers = new Headers(transformed.headers);
+		headers.set('Cache-Control', 'public, max-age=300');
+		return new Response(transformed.body, {
+			status: transformed.status,
+			statusText: transformed.statusText,
+			headers,
+		});
+	} catch (error) {
+		console.error(`Could not refresh ${document}`, error);
+		return shell;
+	}
+}
 
 function json(body, status = 200, headers = {}) {
 	return Response.json(body, { status, headers });
@@ -123,6 +156,12 @@ export default {
 		const url = new URL(request.url);
 		if (SITE_HOSTS.has(url.hostname) && url.pathname === EMAIL_PATH) {
 			return sendDownloadEmail(request, env);
+		}
+		const legalDocument = SITE_HOSTS.has(url.hostname)
+			? legalDocumentForPath(url.pathname)
+			: undefined;
+		if (legalDocument && request.method === 'GET') {
+			return serveLegalPage(request, env, legalDocument);
 		}
 
 		if (url.hostname !== DOWNLOAD_HOST || url.pathname !== DOWNLOAD_PATH) {

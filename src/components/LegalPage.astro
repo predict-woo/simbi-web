@@ -1,0 +1,180 @@
+---
+import GraphPaper from './GraphPaper.astro';
+import Frame from './Frame.astro';
+import Hatch from './Hatch.astro';
+import Mark from './Mark.astro';
+import simbiIcon from '../assets/simbi-icon.svg';
+import { legalSourceUrl, renderLegalMarkdown } from '../lib/legal-docs.js';
+import '../styles/global.css';
+
+interface Props {
+	description: string;
+	document: 'PRIVACY.md' | 'TERMS.md';
+	title: string;
+}
+
+const { description, document, title } = Astro.props;
+const githubUrl = 'https://github.com/predict-woo/simbi';
+const response = await fetch(legalSourceUrl(document));
+if (!response.ok) throw new Error(`Could not load ${document}: ${response.status}`);
+const content = renderLegalMarkdown(await response.text());
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script is:inline>
+			(() => {
+				let theme;
+				try {
+					const stored = localStorage.getItem('starlight-theme');
+					if (stored === 'light' || stored === 'dark') theme = stored;
+				} catch {}
+				document.documentElement.dataset.theme =
+					theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+			})();
+		</script>
+		<title>{title} · Simbi</title>
+		<meta name="description" content={description} />
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="https://spoqa.github.io/spoqa-han-sans/css/SpoqaHanSansNeo.css"
+		/>
+	</head>
+	<body>
+		<div class="sticky top-0 z-50 bg-paper">
+			<hr class="absolute inset-x-0 top-0 z-20 border-hairline sm:hidden" />
+			<Mark class="top-0 left-4 sm:hidden" />
+			<Mark class="top-0 right-4 sm:hidden" />
+			<Frame seed={10} flush>
+				<header class="flex h-12 items-stretch">
+					<a href="/" class="flex items-center gap-2 pl-5 text-lg font-bold sm:pl-8 lg:pl-10">
+						<img src={simbiIcon.src} alt="" width="26" height="26" />
+						<span class="text-accent">Simbi</span>
+					</a>
+					<nav class="ml-auto flex items-stretch">
+						<a
+							href="/docs/"
+							class="relative flex size-12 items-center justify-center border-l border-hairline text-accent transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+							aria-label="Documentation"
+							title="Documentation"
+						>
+							<Mark class="top-0 left-0 -mt-px -ml-px sm:hidden" />
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+								<path d="M6.5 2H20V22H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"></path>
+							</svg>
+						</a>
+						<a
+							href={githubUrl}
+							class="relative flex size-12 items-center justify-center border-l border-hairline text-accent transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+							aria-label="GitHub"
+							title="GitHub"
+						>
+							<Mark class="top-0 left-0 -mt-px -ml-px sm:hidden" />
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M15 22V18A4.8 4.8 0 0 0 14 14.5C17.3 14.1 20.8 12.9 20.8 7.5A5.4 5.4 0 0 0 19.4 4 5 5 0 0 0 19.3.5S18 0 15 2A13.4 13.4 0 0 0 7 2C4 .5 2.7.5 2.7.5A5 5 0 0 0 2.6 4 5.4 5.4 0 0 0 1.2 7.7C1.2 13.1 4.7 14.3 8 14.7A4.8 4.8 0 0 0 7 18V22"></path>
+								<path d="M7 19C4 19.9 4 17.5 3 17"></path>
+							</svg>
+						</a>
+						<button
+							data-theme-toggle
+							type="button"
+							class="relative flex size-12 items-center justify-center border-l border-hairline text-ink transition-colors hover:text-accent focus-visible:outline-2 focus-visible:outline-accent"
+							aria-label="Switch to dark mode"
+							aria-pressed="false"
+						>
+							<Mark class="top-0 left-0 -mt-px -ml-px sm:hidden" />
+							<Mark class="bottom-0 left-0 -mb-px -ml-px" />
+							<svg class="theme-icon-moon size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"></path>
+							</svg>
+							<svg class="theme-icon-sun size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+								<circle cx="12" cy="12" r="4"></circle>
+								<path d="M12 2V4M12 20V22M4.9 4.9L6.3 6.3M17.7 17.7L19.1 19.1M2 12H4M20 12H22M4.9 19.1L6.3 17.7M17.7 6.3L19.1 4.9"></path>
+							</svg>
+						</button>
+					</nav>
+				</header>
+			</Frame>
+			<hr class="border-hairline" />
+			<Mark class="bottom-0 left-4 sm:left-6 md:left-12" />
+			<Mark class="right-4 bottom-0 sm:right-6 md:right-12" />
+		</div>
+
+		<Frame seed={20} marks flush>
+			<main class="relative px-5 py-10 sm:px-8 md:py-16 lg:px-10">
+				<GraphPaper fade />
+				<article
+					id="legal-content"
+					class="legal-prose corner-bevel relative mx-auto max-w-3xl rounded-sm border border-hairline bg-paper p-6 sm:p-10"
+					set:html={content}
+				></article>
+			</main>
+		</Frame>
+
+		<hr class="border-hairline" />
+
+		<Frame seed={30} flush>
+			<div class="relative h-10" aria-hidden="true"><Hatch /></div>
+		</Frame>
+
+		<hr class="border-hairline" />
+
+		<Frame seed={40}>
+			<footer class="flex flex-wrap items-center justify-between gap-3 py-6 text-sm text-muted">
+				<span>MIT licensed · © 2026 Andrew Sangwoo Ye</span>
+				<nav class="flex flex-wrap gap-x-6 gap-y-2">
+					<a href="/docs/" class="text-accent transition-colors hover:text-ink">Docs</a>
+					<a href={githubUrl} class="text-accent transition-colors hover:text-ink">GitHub</a>
+					<a href="/privacy/" class="text-accent transition-colors hover:text-ink">Privacy</a>
+					<a href="/terms/" class="text-accent transition-colors hover:text-ink">Terms</a>
+				</nav>
+			</footer>
+		</Frame>
+
+		<script is:inline>
+			(() => {
+				const root = document.documentElement;
+				const toggle = document.querySelector('[data-theme-toggle]');
+				const applyTheme = (theme) => {
+					root.dataset.theme = theme;
+					const next = theme === 'dark' ? 'light' : 'dark';
+					toggle.setAttribute('aria-label', `Switch to ${next} mode`);
+					toggle.setAttribute('aria-pressed', String(theme === 'dark'));
+				};
+				applyTheme(root.dataset.theme);
+				toggle.addEventListener('click', () => {
+					const theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+					const update = () => {
+						applyTheme(theme);
+						try {
+							localStorage.setItem('starlight-theme', theme);
+						} catch {}
+					};
+					if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+						update();
+						return;
+					}
+					const { left, top, width, height } = toggle.getBoundingClientRect();
+					const x = left + width / 2;
+					const y = top + height / 2;
+					const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+					const transition = document.startViewTransition(update);
+					transition.ready.then(() =>
+						root.animate(
+							{ clipPath: [`circle(0 at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+							{ duration: 450, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', pseudoElement: '::view-transition-new(root)' },
+						),
+					).catch(() => {});
+				});
+			})();
+		</script>
+	</body>
+</html>

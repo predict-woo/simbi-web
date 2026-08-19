@@ -8,7 +8,7 @@
 		"directory": "./dist",
 		"binding": "ASSETS",
 		"not_found_handling": "404-page",
-		"run_worker_first": ["/api/*", "/darwin-arm64"]
+		"run_worker_first": ["/api/*", "/darwin-arm64", "/privacy", "/privacy/*", "/terms", "/terms/*"]
 	},
 	"send_email": [
 		{

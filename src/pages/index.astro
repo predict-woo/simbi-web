@@ -803,10 +803,12 @@ const [lightAvif, lightWebp, darkWebp] = await Promise.all([
 		<Frame seed={80}>
 			<footer class="flex flex-wrap items-center justify-between gap-3 py-6 text-sm text-muted">
 				<span>MIT licensed · © 2026 Andrew Sangwoo Ye</span>
-				<nav class="flex gap-6">
+				<nav class="flex flex-wrap gap-x-6 gap-y-2">
 					<a href="/docs/" class="text-accent transition-colors hover:text-ink">Docs</a>
 					<a href={githubUrl} class="text-accent transition-colors hover:text-ink">GitHub</a>
 					<a href={releasesUrl} class="text-accent transition-colors hover:text-ink">Releases</a>
+					<a href="/privacy/" class="text-accent transition-colors hover:text-ink">Privacy</a>
+					<a href="/terms/" class="text-accent transition-colors hover:text-ink">Terms</a>
 				</nav>
 			</footer>
 		</Frame>
