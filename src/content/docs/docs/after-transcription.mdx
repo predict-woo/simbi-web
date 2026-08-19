@@ -1,0 +1,113 @@
+---
+title: After transcription
+description: Learn how Simbi writes AI Notes, names new notes, links summaries to audio, and synchronizes transcript playback.
+sidebar:
+  order: 4
+---
+
+import AppIcon from '../../../components/AppIcon.astro';
+
+When a recording stops, Simbi finishes the remaining transcript and then, when
+enabled, creates AI Notes and proposes a title for a still-untitled note.
+
+![Simbi writing AI Notes after a recording while the completed transcript remains visible.](../../../assets/docs/after-transcription-loading.png)
+
+These features run only after recording has stopped, when the transcript has
+content and Codex is connected.
+
+## AI Notes
+
+The first generation selects the **AI Notes** tab and displays a progress state.
+The transcript remains available in the right pane while the summary is being
+written.
+
+![The AI Notes progress state explaining that Simbi is reading the transcript and the user's notes.](../../../assets/docs/ai-notes-loading.png)
+
+Simbi reads your notes, transcript, and converted attachments. If AI Notes
+already exist, Simbi also reads them so a later recording can be woven into the
+existing summary.
+
+The result is a concise note organized for the kind of recording Simbi finds,
+such as a meeting, lecture, interview, presentation, or open discussion. It
+removes conversational filler while preserving the substance of your notes.
+
+![Completed AI Notes beside the transcript they summarize.](../../../assets/docs/ai-notes-complete.png)
+
+You can edit AI Notes directly. After a later recording, Simbi updates them
+while preserving your wording, additions, and ordering where possible.
+
+The <AppIcon name="refresh" label="Regenerate AI Notes" /> button rebuilds AI
+Notes from the source material. This replaces the current AI Notes, so any
+manual edits are discarded.
+
+You can customize this behavior by editing `SUMMARY.md` at the Simbi home root.
+See [AI behavior is defined at the home root](/docs/how-simbi-stores-notes/#ai-behavior-is-defined-at-the-home-root).
+
+## Timestamp citations
+
+Every point derived from the transcript ends with one or more timestamp
+citations.
+
+![A close view of AI Notes with timestamp citations after each summarized point.](../../../assets/docs/ai-notes-timestamps.png)
+
+Each blue timestamp is clickable.
+
+Clicking a citation does two things:
+
+1. Playback starts at that exact point in the audio.
+2. The corresponding transcript line scrolls into view and receives a brief
+   speaker-colored highlight.
+
+## Automatic note titles
+
+Simbi proposes a title only when the note still has a default name such as
+`New Note` or `New Note 2`. A note that you have already named is never renamed
+automatically.
+
+It bases the title on your notes, transcript, and converted attachments. The
+default policy chooses a short, specific title based on the subject rather than
+the recording format. If that title already exists, Simbi adds a number, such
+as `Project Review 2`.
+
+Simbi applies the title after AI Notes and transcript cleanup finish. If you
+rename the note first, your name wins.
+
+The title policy comes from `TITLE.md` at the Simbi home root and can be edited
+independently of `SUMMARY.md`.
+
+## Transcript playback
+
+When a note has recorded audio, the top of the transcript pane becomes a player.
+It contains play or pause, the current time, a scrubber, the total duration, and
+the copy-transcript button.
+
+![AI Notes and the transcript during playback, with the current cue highlighted in the right pane.](../../../assets/docs/synchronized-playback.png)
+
+As audio plays, the matching transcript line receives a soft tint in its
+speaker color. The transcript automatically scrolls to keep that line in view.
+
+![The transcript player at 1:23 with the cue beginning at 1:20 highlighted.](../../../assets/docs/transcript-playback-controls.png)
+
+### Play from a transcript cue
+
+Hovering a transcript row gives it a neutral gray background to show that the
+row is interactive.
+
+![A transcript cue with its neutral hover background.](../../../assets/docs/transcript-cue-hover.png)
+
+Click either a line's timestamp or its text to start playing from that moment.
+Once playback reaches it, the row changes to its speaker-colored active tint.
+
+![A transcript cue highlighted with its speaker color during playback.](../../../assets/docs/active-transcript-cue.png)
+
+Playback is unavailable while recording.
+
+### Copy the complete WebVTT transcript
+
+Click the <AppIcon name="copy" label="Copy transcript" /> button at the top right
+of the player to copy the complete transcript as WebVTT. The copy includes the
+latest transcription results and transcript-fixer edits.
+
+The copied text includes timestamps and speaker labels, not just the words
+visible in the pane. The button briefly becomes a checkmark after a successful
+copy.

@@ -8,7 +8,9 @@ sidebar:
 ## Requirements
 
 - Apple silicon Mac
-- macOS 14.0 or later (system-audio capture requires 14.4+)
+- macOS 14.0 or later. macOS 26 is recommended. System-audio capture requires
+  macOS 14.4 or later.
+- The ChatGPT app installed and signed in
 
 ## Install
 
